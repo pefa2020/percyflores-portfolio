@@ -162,8 +162,8 @@ const projectData = {
     ],
     tools: ['Next.js', 'React', 'AI SDK', 'Vercel Blob', 'Neon Postgres', 'Shadcn/ui', 'Tailwind CSS', 'TypeScript'],
     files: [
-      { label: 'CS 491 Final Paper (HTML)', path: './reports/cs491-report.html', type: 'pdf' },
-      { label: 'CS 491 Final Paper (Official PDF)', path: './Copy of CS 491 Final Paper.pdf', type: 'pdf' }
+      { label: 'View Documentation HTML', path: './reports/cs491-report.html', type: 'link' },
+      { label: 'View Official PDF', path: './assets/cs491-official.pdf', type: 'pdf' }
     ]
   },
   arp: {
