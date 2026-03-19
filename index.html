@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="Percy Flores - Cybersecurity &amp; Full-Stack Engineer | NJIT Master's Student | Portfolio showcasing network security, binary exploitation, and full-stack AI development." />
+  <meta name="keywords"
+    content="Percy Flores, Cybersecurity, Network Security, Full-Stack Engineer, NJIT, Internship, JP Morgan" />
+  <meta name="author" content="Percy Flores" />
+  <meta property="og:title" content="Percy Flores - Cybersecurity &amp; Full-Stack Engineer" />
+  <meta property="og:description"
+    content="Portfolio of Percy Flores - Master's student at NJIT specializing in Cybersecurity, Networking, and Full-Stack Engineering." />
+  <meta property="og:type" content="website" />
+  <title>Percy Flores - Cybersecurity &amp; Full-Stack Engineer</title>
+  <link rel="stylesheet" href="styles.css" />
+  <!-- Favicon inline SVG -->
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔐</text></svg>" />
+</head>
+
+<body>
+
+  <!-- Background -->
+  <div class="grid-bg" aria-hidden="true"></div>
+  <div class="orb orb-1" aria-hidden="true"></div>
+  <div class="orb orb-2" aria-hidden="true"></div>
+  <div class="orb orb-3" aria-hidden="true"></div>
+
+  <!-- ═══════════════════════════════════════════════
+       NAV
+  ═══════════════════════════════════════════════ -->
+  <header id="navbar" role="banner">
+    <nav class="container nav-inner" aria-label="Primary navigation">
+      <a href="#hero" class="nav-logo" id="nav-logo">
+        <span class="nav-logo-bracket">[</span>
+        pf@portfolio
+        <span class="nav-logo-bracket">]</span>
+      </a>
+      <ul class="nav-links" role="list">
+        <li><a href="#about" id="nav-about">About</a></li>
+        <li><a href="#skills" id="nav-skills">Skills</a></li>
+        <li><a href="#projects" id="nav-projects">Projects</a></li>
+        <li><a href="#documents" id="nav-documents">Documents</a></li>
+        <li><a href="#education" id="nav-education">Education</a></li>
+        <li><a href="mailto:pef3@njit.edu" class="nav-cta" id="nav-contact">Contact Me</a></li>
+      </ul>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle light/dark mode" title="Toggle theme">
+        <span class="theme-icon">🌙</span>
+      </button>
+      <button class="hamburger" id="hamburger" aria-label="Toggle mobile menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </nav>
+  </header>
+
+  <!-- Mobile nav -->
+  <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation">
+    <a href="#about">About</a>
+    <a href="#skills">Skills</a>
+    <a href="#projects">Projects</a>
+    <a href="#documents">Documents</a>
+    <a href="#education">Education</a>
+    <a href="mailto:pef3@njit.edu">Contact Me</a>
+  </nav>
+
+  <main>
+
+    <!-- ═══════════════════════════════════════════════
+         HERO
+    ═══════════════════════════════════════════════ -->
+    <section id="hero" aria-label="Introduction">
+      <div class="container hero-grid">
+        <div class="hero-content">
+
+          <div class="hero-badge reveal">
+            <span class="hero-badge-dot" aria-hidden="true"></span>
+            Available for Internship - Spring / Summer 2026
+          </div>
+
+          <h1 class="hero-name reveal reveal-delay-1" id="hero-name">
+            <span class="hero-name-line1">Percy</span><br>
+            <span class="hero-name-line2">Flores</span>
+          </h1>
+
+          <p class="hero-tagline reveal reveal-delay-2">Co-Founder at Prismont AI &nbsp;|&nbsp; Master's Candidate at
+            NJIT</p>
+
+          <div class="hero-typewriter reveal reveal-delay-3" aria-live="polite">
+            <span id="typewriter-text"></span><span class="cursor" aria-hidden="true"></span>
+          </div>
+
+          <div class="hero-actions reveal reveal-delay-4">
+            <a href="#projects" class="btn-primary" id="hero-cta-projects">
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                aria-hidden="true">
+                <path d="M9 5l7 7-7 7" />
+              </svg>
+              View My Work
+            </a>
+            <a href="./Percy_Flores__1Page.pdf" target="_blank" rel="noopener noreferrer" class="btn-secondary"
+              style="border-color: var(--accent-cyan); color: var(--accent-cyan);" id="hero-cta-resume">
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              View Resume
+            </a>
+            <a href="#contact" class="btn-secondary" id="hero-cta-contact">
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                aria-hidden="true">
+                <path
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              Get In Touch
+            </a>
+          </div>
+
+          <div class="hero-stats reveal reveal-delay-5">
+            <div class="stat">
+              <span class="stat-value">8</span>
+              <span class="stat-label">Projects Completed</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value">3+</span>
+              <span class="stat-label">Security Domains</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value">6</span>
+              <span class="stat-label">CTF Labs</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value">NJIT</span>
+              <span class="stat-label">Master's Program</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-visuals">
+          <div class="hero-photo-wrap reveal reveal-delay-2">
+            <img src="./reports/images/MY_PHOTO.JPG" alt="Percy Flores Profile Photo" class="hero-photo" />
+          </div>
+          <!-- Floating terminal -->
+          <div class="hero-terminal reveal reveal-delay-4" aria-hidden="true">
+            <div class="terminal-bar">
+              <span class="terminal-dot red"></span>
+              <span class="terminal-dot yellow"></span>
+              <span class="terminal-dot green"></span>
+              <span class="terminal-title">percy@njit-lab: ~</span>
+            </div>
+            <div class="terminal-body">
+              <div class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">whoami</span></div>
+              <div class="t-line"><span class="t-high">percy_flores</span> <span class="t-out">| cybersecurity &amp;
+                  fullstack eng</span></div>
+              <div class="t-line">&nbsp;</div>
+              <div class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">cat skills.txt</span></div>
+              <div class="t-line"><span class="t-high">-</span> <span class="t-out">Binary Exploitation (GDB,
+                  Shellcode)</span></div>
+              <div class="t-line"><span class="t-high">-</span> <span class="t-out">Network Security (Wireshark,
+                  ARP)</span></div>
+              <div class="t-line"><span class="t-high">-</span> <span class="t-out">Full-Stack Dev (Next.js, AI
+                  SDK)</span></div>
+              <div class="t-line"><span class="t-high">-</span> <span class="t-out">Cisco Networking (Packet
+                  Tracer)</span></div>
+              <div class="t-line">&nbsp;</div>
+              <div class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">./apply -position "JP Morgan
+                  Internship"</span></div>
+              <div class="t-line"><span class="t-warn">[ READY ]</span> <span class="t-out">Candidate ready.
+                  Initiating...</span></div>
+              <div class="t-line">&nbsp;</div>
+              <div class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">█</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         ABOUT
+    ═══════════════════════════════════════════════ -->
+    <section id="about" aria-label="About Percy Flores">
+      <div class="container">
+        <p class="section-label reveal">About Me</p>
+        <h2 class="section-title reveal reveal-delay-1">Building Toward<br>Enterprise Readiness</h2>
+
+        <div class="about-grid">
+          <div class="about-text">
+            <p class="reveal reveal-delay-1">
+              I am <strong>Percy Flores</strong>, a Master's student at the <strong>New Jersey Institute of
+                Technology</strong>,
+              concentrating in <strong>Cybersecurity and Privacy</strong>. My journey is defined by a commitment
+              to bridging theoretical knowledge and hands-on, real-world execution.
+            </p>
+            <p class="reveal reveal-delay-2">
+              Currently, I am the <strong>Co-Founder & Lead Engineer of Prismont AI</strong> alongside Rajwinder Parmer
+              (Network Engineer & MBA candidate), where we are building the definitive governance layer for Enterprise
+              AI, featuring structured adversarial review, policy-aligned execution, and immutable audit trails.
+              Alongside this, I perform intensive cybersecurity lab work, from exploiting network configurations to
+              performing controlled binary exploitation.
+            </p>
+            <p class="reveal reveal-delay-3">
+              I am actively preparing for internship opportunities within <strong>Cybersecurity and IT</strong>, with a
+              long-term focus on network defense, threat analysis, and secure systems design. My goal is to integrate
+              quickly,
+              meet high engineering standards, and continuously improve to align with the expectations at world-class
+              organizations
+              such as <strong>JP Morgan</strong>.
+            </p>
+            <div class="about-highlight reveal reveal-delay-4">
+              <blockquote>
+                "I intentionally waited to reach this point - I wanted to present a profile that reflects stronger
+                practical readiness, not just coursework."
+              </blockquote>
+            </div>
+          </div>
+
+          <!-- Enterprise Cyber Visual -->
+          <div class="about-image reveal reveal-delay-2">
+            <div class="about-photo-wrap">
+              <img src="./reports/images/enterprise_cyber_visual.png"
+                alt="Enterprise Cybersecurity and Network Architecture" />
+            </div>
+          </div>
+
+          <div class="about-cards">
+            <div class="about-card reveal reveal-delay-1">
+              <div class="about-card-icon" style="background:rgba(59,130,246,0.12);">🎓</div>
+              <div class="about-card-text">
+                <h4>Graduate Study at NJIT</h4>
+                <p>Master's program with deep focus in cybersecurity, network protocols, and counter-hacking techniques.
+                </p>
+              </div>
+            </div>
+            <div class="about-card reveal reveal-delay-2">
+              <div class="about-card-icon" style="background:rgba(239,68,68,0.12);">🔐</div>
+              <div class="about-card-text">
+                <h4>Binary Exploitation &amp; Forensics</h4>
+                <p>6 hands-on CTF-style security labs covering buffer overflows, shellcode injection, ASLR bypass, and
+                  digital forensics.</p>
+              </div>
+            </div>
+            <div class="about-card reveal reveal-delay-3">
+              <div class="about-card-icon" style="background:rgba(16,185,129,0.12);">🌐</div>
+              <div class="about-card-text">
+                <h4>Network Engineering</h4>
+                <p>ARP poisoning, MITM attacks, VLSM subnetting, and multi-router topologies using Wireshark and Cisco
+                  Packet Tracer.</p>
+              </div>
+            </div>
+            <div class="about-card reveal reveal-delay-4">
+              <div class="about-card-icon" style="background:rgba(139,92,246,0.12);">⚡</div>
+              <div class="about-card-text">
+                <h4>Full-Stack AI Development</h4>
+                <p>Lead Developer on a production AI chatbot (Merck Capstone) using Next.js, AI SDK, and agentic LLM
+                  tool-calling.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         SKILLS
+    ═══════════════════════════════════════════════ -->
+    <section id="skills" aria-label="Skills and technologies">
+      <div class="container">
+        <p class="section-label reveal">Technical Skills</p>
+        <h2 class="section-title reveal reveal-delay-1">Tools &amp; Expertise</h2>
+        <p class="section-subtitle reveal reveal-delay-2">A practitioner's toolkit - built in the lab, refined through
+          real project execution.</p>
+
+        <div class="skills-grid">
+
+          <!-- Cybersecurity -->
+          <div class="skill-category reveal reveal-delay-1">
+            <div class="skill-cat-header">
+              <div class="skill-cat-icon" style="background:rgba(239,68,68,0.12);">🛡️</div>
+              <h3 class="skill-cat-title">Cybersecurity</h3>
+            </div>
+            <div class="skill-bar-wrap">
+              <div class="skill-bar-header">
+                <span class="skill-bar-name">Binary Exploitation (GDB)</span>
+                <span class="skill-bar-pct">88%</span>
+              </div>
+              <div class="skill-bar-track">
+                <div class="skill-bar-fill" data-pct="88"></div>
+              </div>
+            </div>
+            <div class="skill-bar-wrap">
+              <div class="skill-bar-header">
+                <span class="skill-bar-name">Shellcode & Payload Crafting</span>
+                <span class="skill-bar-pct">80%</span>
+              </div>
+              <div class="skill-bar-track">
+                <div class="skill-bar-fill" data-pct="80"></div>
+              </div>
+            </div>
+            <div class="skill-bar-wrap">
+              <div class="skill-bar-header">
+                <span class="skill-bar-name">Vulnerability Assessment</span>
+                <span class="skill-bar-pct">85%</span>
+              </div>
+              <div class="skill-bar-track">
+                <div class="skill-bar-fill" data-pct="85"></div>
+              </div>
+            </div>
+            <div class="skill-bar-wrap">
+              <div class="skill-bar-header">
+                <span class="skill-bar-name">ASLR / SSP / DEP Bypass</span>
+                <span class="skill-bar-pct">75%</span>
+              </div>
+              <div class="skill-bar-track">
+                <div class="skill-bar-fill" data-pct="75"></div>
+              </div>
+            </div>
+            <div class="tool-pills">
+              <span class="tool-pill">GDB</span>
+              <span class="tool-pill">ltrace</span>
+              <span class="tool-pill">strace</span>
+              <span class="tool-pill">Metasploit</span>
+              <span class="tool-pill">Return-to-libc</span>
+              <span class="tool-pill">NOP Sled</span>
+            </div>
+          </div>
+
+          <!-- Networking -->
+          <div class="skill-category reveal reveal-delay-2">
+            <div class="skill-cat-header">
+              <div class="skill-cat-icon" style="background:rgba(16,185,129,0.12);">🌐</div>
+              <h3 class="skill-cat-title">Network Engineering</h3>
+            </div>
+            <div class="skill-bar-wrap">
+              <div class="skill-bar-header">
+                <span class="skill-bar-name">Wireshark / Packet Analysis</span>
+                <span class="skill-bar-pct">74%</span>
+              </div>
+              <div class="skill-bar-track">
+                <div class="skill-bar-fill" data-pct="74"></div>
+              </div>
+            </div>
+            <div class="skill-bar-wrap">
+              <div class="skill-bar-header">
+                <span class="skill-bar-name">Cisco Packet Tracer (VLSM)</span>
+                <span class="skill-bar-pct">71%</span>
+              </div>
+              <div class="skill-bar-track">
+                <div class="skill-bar-fill" data-pct="71"></div>
+              </div>
+            </div>
+            <div class="skill-bar-wrap">
+              <div class="skill-bar-header">
+                <span class="skill-bar-name">TCP/IP Protocols</span>
+                <span class="skill-bar-pct">75%</span>
+              </div>
+              <div class="skill-bar-track">
+                <div class="skill-bar-fill" data-pct="75"></div>
+              </div>
+            </div>
+            <div class="skill-bar-wrap">
+              <div class="skill-bar-header">
+                <span class="skill-bar-name">Firewalls & Architecture</span>
+                <span class="skill-bar-pct">68%</span>
+              </div>
+              <div class="skill-bar-track">
+                <div class="skill-bar-fill" data-pct="68"></div>
+              </div>
+            </div>
+            <div class="tool-pills">
+              <span class="tool-pill">Wireshark</span>
+              <span class="tool-pill">Cisco IOS</span>
+              <span class="tool-pill">IPv4/VLSM</span>
+              <span class="tool-pill">SSH</span>
+              <span class="tool-pill">SMB</span>
+              <span class="tool-pill">ARP</span>
+            </div>
+          </div>
+
+          <!-- Full-Stack -->
+          <div class="skill-category reveal reveal-delay-3">
+            <div class="skill-cat-header">
+              <div class="skill-cat-icon" style="background:rgba(139,92,246,0.12);">⚡</div>
+              <h3 class="skill-cat-title">Full-Stack Development</h3>
+            </div>
+            <div class="skill-bar-wrap">
+              <div class="skill-bar-header">
+                <span class="skill-bar-name">Next.js / React</span>
+                <span class="skill-bar-pct">70%</span>
+              </div>
+              <div class="skill-bar-track">
+                <div class="skill-bar-fill" data-pct="70"></div>
+              </div>
+            </div>
+            <div class="skill-bar-wrap">
+              <div class="skill-bar-header">
+                <span class="skill-bar-name">AI SDK / LLM Tool-Calling</span>
+                <span class="skill-bar-pct">65%</span>
+              </div>
+              <div class="skill-bar-track">
+                <div class="skill-bar-fill" data-pct="65"></div>
+              </div>
+            </div>
+            <div class="skill-bar-wrap">
+              <div class="skill-bar-header">
+                <span class="skill-bar-name">PostgreSQL / Neon DB</span>
+                <span class="skill-bar-pct">58%</span>
+              </div>
+              <div class="skill-bar-track">
+                <div class="skill-bar-fill" data-pct="58"></div>
+              </div>
+            </div>
+            <div class="skill-bar-wrap">
+              <div class="skill-bar-header">
+                <span class="skill-bar-name">TypeScript / JavaScript</span>
+                <span class="skill-bar-pct">74%</span>
+              </div>
+              <div class="skill-bar-track">
+                <div class="skill-bar-fill" data-pct="74"></div>
+              </div>
+            </div>
+            <div class="tool-pills">
+              <span class="tool-pill">Next.js</span>
+              <span class="tool-pill">React</span>
+              <span class="tool-pill">TypeScript</span>
+              <span class="tool-pill">AI SDK</span>
+              <span class="tool-pill">Postgres</span>
+              <span class="tool-pill">Vercel</span>
+            </div>
+          </div>
+
+          <!-- Systems & Tools -->
+          <div class="skill-category reveal reveal-delay-4">
+            <div class="skill-cat-header">
+              <div class="skill-cat-icon" style="background:rgba(245,158,11,0.12);">💻</div>
+              <h3 class="skill-cat-title">Systems &amp; Tooling</h3>
+            </div>
+            <div class="skill-bar-wrap">
+              <div class="skill-bar-header">
+                <span class="skill-bar-name">Linux / Bash Scripting</span>
+                <span class="skill-bar-pct">73%</span>
+              </div>
+              <div class="skill-bar-track">
+                <div class="skill-bar-fill" data-pct="73"></div>
+              </div>
+            </div>
+            <div class="skill-bar-wrap">
+              <div class="skill-bar-header">
+                <span class="skill-bar-name">Python</span>
+                <span class="skill-bar-pct">68%</span>
+              </div>
+              <div class="skill-bar-track">
+                <div class="skill-bar-fill" data-pct="68"></div>
+              </div>
+            </div>
+            <div class="skill-bar-wrap">
+              <div class="skill-bar-header">
+                <span class="skill-bar-name">Git / Version Control</span>
+                <span class="skill-bar-pct">75%</span>
+              </div>
+              <div class="skill-bar-track">
+                <div class="skill-bar-fill" data-pct="75"></div>
+              </div>
+            </div>
+            <div class="skill-bar-wrap">
+              <div class="skill-bar-header">
+                <span class="skill-bar-name">Virtual Machine Environments</span>
+                <span class="skill-bar-pct">86%</span>
+              </div>
+              <div class="skill-bar-track">
+                <div class="skill-bar-fill" data-pct="86"></div>
+              </div>
+            </div>
+            <div class="tool-pills">
+              <span class="tool-pill">Linux</span>
+              <span class="tool-pill">Bash</span>
+              <span class="tool-pill">Python</span>
+              <span class="tool-pill">Git</span>
+              <span class="tool-pill">VMware</span>
+              <span class="tool-pill">Docker</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         PROJECTS
+    ═══════════════════════════════════════════════ -->
+    <section id="projects" aria-label="Projects">
+      <div class="container">
+        <p class="section-label reveal">Projects</p>
+        <h2 class="section-title reveal reveal-delay-1">Hands-On Engineering Work</h2>
+        <p class="section-subtitle reveal reveal-delay-2">Every project was executed in a real or controlled environment
+          - no simulations, no shortcuts.</p>
+
+        <div class="projects-filter reveal reveal-delay-3" role="group" aria-label="Filter projects">
+          <button class="filter-btn active" data-filter="all" id="filter-all">All Projects</button>
+          <button class="filter-btn" data-filter="cyber" id="filter-cyber">Cybersecurity</button>
+          <button class="filter-btn" data-filter="network" id="filter-network">Networking</button>
+          <button class="filter-btn" data-filter="fullstack" id="filter-fullstack">Full-Stack</button>
+        </div>
+
+        <div class="projects-grid" id="projects-grid">
+
+          <!-- Prismont AI Startup -->
+          <article class="project-card reveal reveal-delay-1" data-key="prismont" data-category="fullstack"
+            role="button" tabindex="0" aria-label="Prismont Enterprise AI Governance Platform - Click for details"
+            style="border-color: rgba(6,182,212,0.3); box-shadow: var(--glow-cyan);">
+            <div class="project-card-top">
+              <div class="project-icon" style="background:rgba(6,182,212,0.15); color: var(--accent-cyan);">⬡</div>
+              <div class="project-badges">
+                <span class="badge badge-fullstack"
+                  style="background: var(--accent-cyan); color: #fff; border:none;">Startup Founder</span>
+                <span class="badge badge-ai">Enterprise AI</span>
+              </div>
+            </div>
+            <div class="project-card-body">
+              <p class="project-card-course">Co-Founder & Lead Engineer | 2026</p>
+              <h3 class="project-card-title">Prismont - AI Governance Platform</h3>
+              <p class="project-card-desc">Architecting and building the definitive governance layer for Enterprise AI.
+                Features structured adversarial review, policy-aligned execution, and an immutable audit trail system.
+              </p>
+              <div class="project-tags">
+                <span class="project-tag">Next.js</span>
+                <span class="project-tag">AI Multi-Agent Systems</span>
+                <span class="project-tag">Governance Infrastructure</span>
+              </div>
+            </div>
+            <div class="project-card-footer">
+              <span class="project-expand-hint">
+                View Details
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                  aria-hidden="true">
+                  <path d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
+            </div>
+          </article>
+
+          <!-- Merck AI Capstone -->
+          <article class="project-card reveal reveal-delay-1" data-key="merck" data-category="fullstack" role="button"
+            tabindex="0" aria-label="Merck AI Scenario Planning Chatbot - Click for details">
+            <div class="project-card-top">
+              <div class="project-icon" style="background:rgba(139,92,246,0.15);">🤖</div>
+              <div class="project-badges">
+                <span class="badge badge-fullstack">Full-Stack</span>
+                <span class="badge badge-ai">AI</span>
+              </div>
+            </div>
+            <div class="project-card-body">
+              <p class="project-card-course">CS 491 - Senior Capstone | Spring 2025</p>
+              <h3 class="project-card-title">Merck AI Scenario Planning Chatbot</h3>
+              <p class="project-card-desc">Led development of a production-grade AI chatbot enabling Merck project
+                managers to query Microsoft Project schedules using natural language via 9 custom LLM tool-calling
+                functions.</p>
+              <div class="project-tags">
+                <span class="project-tag">Next.js</span>
+                <span class="project-tag">AI SDK</span>
+                <span class="project-tag">Neon Postgres</span>
+                <span class="project-tag">Vercel Blob</span>
+              </div>
+            </div>
+            <div class="project-card-footer">
+              <span class="project-expand-hint">
+                View Details
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                  aria-hidden="true">
+                  <path d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
+            </div>
+          </article>
+
+          <!-- ARP Poisoning -->
+          <article class="project-card reveal reveal-delay-2" data-key="arp" data-category="network" role="button"
+            tabindex="0" aria-label="ARP Poisoning Attack Lab - Click for details">
+            <div class="project-card-top">
+              <div class="project-icon" style="background:rgba(16,185,129,0.15);">📡</div>
+              <div class="project-badges">
+                <span class="badge badge-network">Networking</span>
+                <span class="badge badge-cyber">Security</span>
+              </div>
+            </div>
+            <div class="project-card-body">
+              <p class="project-card-course">CS 646 - Network Protocols & Security | Spring 2026</p>
+              <h3 class="project-card-title">ARP Poisoning Attack Lab</h3>
+              <p class="project-card-desc">Performed a controlled ARP Poisoning (Man-in-the-Middle) attack in a VM
+                environment, intercepting live traffic with Wireshark and proposing enterprise-grade mitigations.</p>
+              <div class="project-tags">
+                <span class="project-tag">Wireshark</span>
+                <span class="project-tag">ARP/MITM</span>
+                <span class="project-tag">Linux VM</span>
+                <span class="project-tag">Python</span>
+              </div>
+            </div>
+            <div class="project-card-footer">
+              <span class="project-expand-hint">
+                View Details
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                  aria-hidden="true">
+                  <path d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
+            </div>
+          </article>
+
+          <!-- Cisco Networking -->
+          <article class="project-card reveal reveal-delay-3" data-key="cisco" data-category="network" role="button"
+            tabindex="0" aria-label="Cisco Multi-Router Network - Click for details">
+            <div class="project-card-top">
+              <div class="project-icon" style="background:rgba(16,185,129,0.12);">🔀</div>
+              <div class="project-badges">
+                <span class="badge badge-network">Networking</span>
+              </div>
+            </div>
+            <div class="project-card-body">
+              <p class="project-card-course">CS 646 - Network Protocols & Security | Spring 2026</p>
+              <h3 class="project-card-title">Cisco Multi-Router Network Configuration</h3>
+              <p class="project-card-desc">Designed and validated a multi-router IP network using VLSM subnetting in
+                Cisco Packet Tracer, correctly assigning addresses across 5 network segments and verifying end-to-end
+                connectivity.</p>
+              <div class="project-tags">
+                <span class="project-tag">Cisco Packet Tracer</span>
+                <span class="project-tag">VLSM</span>
+                <span class="project-tag">IPv4</span>
+                <span class="project-tag">Subnetting</span>
+              </div>
+            </div>
+            <div class="project-card-footer">
+              <span class="project-expand-hint">
+                View Details
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                  aria-hidden="true">
+                  <path d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
+            </div>
+          </article>
+
+          <!-- Legolas - Most Advanced -->
+          <article class="project-card reveal reveal-delay-1" data-key="legolas" data-category="cyber" role="button"
+            tabindex="0" aria-label="ASLR SSP DEP Bypass Legolas Lab - Click for details">
+            <div class="project-card-top">
+              <div class="project-icon" style="background:rgba(239,68,68,0.15);">🏹</div>
+              <div class="project-badges">
+                <span class="badge badge-cyber">Cybersecurity</span>
+              </div>
+            </div>
+            <div class="project-card-body">
+              <p class="project-card-course">CS 647 - Counter Hacking Techniques | Fall 2025</p>
+              <h3 class="project-card-title">ASLR + SSP + DEP Triple Bypass - Legolas Lab</h3>
+              <p class="project-card-desc">Most advanced exploit in the series - simultaneously bypassed all three
+                modern OS defenses using format string leaks for ASLR/canary bypass and a return-to-libc attack to evade
+                DEP.</p>
+              <div class="project-tags">
+                <span class="project-tag">GDB</span>
+                <span class="project-tag">Format String</span>
+                <span class="project-tag">Return-to-libc</span>
+                <span class="project-tag">ASLR Bypass</span>
+              </div>
+            </div>
+            <div class="project-card-footer">
+              <span class="project-expand-hint">
+                View Details
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                  aria-hidden="true">
+                  <path d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
+            </div>
+          </article>
+
+          <!-- Sam - Shellcode -->
+          <article class="project-card reveal reveal-delay-2" data-key="sam" data-category="cyber" role="button"
+            tabindex="0" aria-label="Shellcode Injection Sam Lab - Click for details">
+            <div class="project-card-top">
+              <div class="project-icon" style="background:rgba(239,68,68,0.12);">💉</div>
+              <div class="project-badges">
+                <span class="badge badge-cyber">Cybersecurity</span>
+              </div>
+            </div>
+            <div class="project-card-body">
+              <p class="project-card-course">CS 647 - Counter Hacking Techniques | Fall 2025</p>
+              <h3 class="project-card-title">Shellcode Injection via Buffer Overflow - Sam Lab</h3>
+              <p class="project-card-desc">Crafted a NOP sled + custom shellcode payload injected through a vulnerable
+                strcpy() buffer to spawn an interactive shell. Calculated precise stack offsets and return addresses via
+                GDB analysis.</p>
+              <div class="project-tags">
+                <span class="project-tag">GDB</span>
+                <span class="project-tag">NOP Sled</span>
+                <span class="project-tag">Shellcode</span>
+                <span class="project-tag">x86 Assembly</span>
+              </div>
+            </div>
+            <div class="project-card-footer">
+              <span class="project-expand-hint">
+                View Details
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                  aria-hidden="true">
+                  <path d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
+            </div>
+          </article>
+
+          <!-- Pippin - Forensics -->
+          <article class="project-card reveal reveal-delay-3" data-key="pippin" data-category="cyber" role="button"
+            tabindex="0" aria-label="Digital Forensics Pippin Lab - Click for details">
+            <div class="project-card-top">
+              <div class="project-icon" style="background:rgba(245,158,11,0.15);">🔍</div>
+              <div class="project-badges">
+                <span class="badge badge-forensics">Forensics</span>
+                <span class="badge badge-cyber">Security</span>
+              </div>
+            </div>
+            <div class="project-card-body">
+              <p class="project-card-course">CS 647 - Counter Hacking Techniques | Fall 2025</p>
+              <h3 class="project-card-title">Digital Forensics &amp; SSH Exploitation - Pippin Lab</h3>
+              <p class="project-card-desc">Extracted a hidden SSH private key from 5 layers of nested archives (zip,
+                tar, gzip, bzip2, xz) and leveraged SMB credential harvest to retrieve the target flag.</p>
+              <div class="project-tags">
+                <span class="project-tag">SSH</span>
+                <span class="project-tag">smbclient</span>
+                <span class="project-tag">Forensics</span>
+                <span class="project-tag">Archive Analysis</span>
+              </div>
+            </div>
+            <div class="project-card-footer">
+              <span class="project-expand-hint">
+                View Details
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                  aria-hidden="true">
+                  <path d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
+            </div>
+          </article>
+
+          <!-- Merry - Buffer Overflow -->
+          <article class="project-card reveal reveal-delay-4" data-key="merry" data-category="cyber" role="button"
+            tabindex="0" aria-label="Stack Buffer Overflow Merry Lab - Click for details">
+            <div class="project-card-top">
+              <div class="project-icon" style="background:rgba(59,130,246,0.15);">📦</div>
+              <div class="project-badges">
+                <span class="badge badge-cyber">Cybersecurity</span>
+              </div>
+            </div>
+            <div class="project-card-body">
+              <p class="project-card-course">CS 647 - Counter Hacking Techniques | Fall 2025</p>
+              <h3 class="project-card-title">Stack Buffer Overflow - Merry Lab</h3>
+              <p class="project-card-desc">Overflowed a strcpy() buffer to redirect execution to a hidden getFlag
+                function. Used GDB disassembly to pinpoint the target address and calculate exact 108-byte padding
+                offset.</p>
+              <div class="project-tags">
+                <span class="project-tag">GDB</span>
+                <span class="project-tag">Buffer Overflow</span>
+                <span class="project-tag">Perl Payload</span>
+                <span class="project-tag">x86</span>
+              </div>
+            </div>
+            <div class="project-card-footer">
+              <span class="project-expand-hint">
+                View Details
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                  aria-hidden="true">
+                  <path d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
+            </div>
+          </article>
+
+          <!-- Frodo - Command Injection -->
+          <article class="project-card reveal reveal-delay-5" data-key="frodo" data-category="cyber" role="button"
+            tabindex="0" aria-label="Command Injection Frodo Lab - Click for details">
+            <div class="project-card-top">
+              <div class="project-icon" style="background:rgba(239,68,68,0.10);">💻</div>
+              <div class="project-badges">
+                <span class="badge badge-cyber">Cybersecurity</span>
+              </div>
+            </div>
+            <div class="project-card-body">
+              <p class="project-card-course">CS 647 - Counter Hacking Techniques | Fall 2025</p>
+              <h3 class="project-card-title">Command Injection Exploit - Frodo Lab</h3>
+              <p class="project-card-desc">Identified an unsanitized system() input in iPrint and exploited it with a
+                backtick-injected payload. Used ltrace/strace for dynamic tracing and sudo enumeration to escalate
+                privileges.</p>
+              <div class="project-tags">
+                <span class="project-tag">GDB</span>
+                <span class="project-tag">ltrace / strace</span>
+                <span class="project-tag">Command Injection</span>
+                <span class="project-tag">sudo</span>
+              </div>
+            </div>
+            <div class="project-card-footer">
+              <span class="project-expand-hint">
+                View Details
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                  aria-hidden="true">
+                  <path d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         DOCUMENTS & EVIDENCE
+    ═══════════════════════════════════════════════ -->
+    <section id="documents" aria-label="Documents and Evidence">
+      <div class="container">
+        <p class="section-label reveal">Proof of Work</p>
+        <h2 class="section-title reveal reveal-delay-1">Documents &amp; Evidence</h2>
+        <p class="section-subtitle reveal reveal-delay-2">Every claim on this portfolio is backed by the actual
+          submitted work. Read, download, or verify any report directly below.</p>
+
+        <div class="docs-grid">
+
+          <!-- Resume -->
+          <div class="doc-card reveal reveal-delay-1"
+            style="border-color: rgba(6,182,212,0.4); box-shadow: var(--glow-cyan);">
+            <div class="doc-card-header">
+              <div class="doc-card-meta">
+                <span class="doc-badge badge-cyber" style="background: var(--accent-cyan); color: #fff;">1-Page
+                  Resume</span>
+                <h3 class="doc-card-title">Percy Flores - Resume</h3>
+                <p class="doc-card-sub">Professional resume summarizing education, technical projects, and core
+                  competencies in cybersecurity and software engineering.</p>
+              </div>
+              <div class="doc-card-actions">
+                <button class="doc-btn-view btn-view-pdf" data-src="./Percy_Flores__1Page.pdf"
+                  data-title="Percy Flores - Resume" id="doc-view-resume">⛶ View Fullscreen</button>
+                <a class="doc-btn-dl" href="./Percy_Flores__1Page.pdf" download>↓ Download</a>
+              </div>
+            </div>
+            <div class="doc-embed-wrap">
+              <iframe src="./Percy_Flores__1Page.pdf#toolbar=0" class="doc-embed" title="Percy Flores Resume"
+                loading="lazy" aria-label="Embedded PDF: Percy Flores Resume"></iframe>
+            </div>
+          </div>
+
+          <!-- CS 491 Capstone Paper -->
+          <div class="doc-card reveal reveal-delay-2">
+            <div class="doc-card-header">
+              <div class="doc-card-meta">
+                <span class="doc-badge badge-ai">CS 491 - Capstone</span>
+                <h3 class="doc-card-title">Merck AI Chatbot - Final Paper</h3>
+                <p class="doc-card-sub">Full technical capstone report documenting architecture, tool-calling design,
+                  and implementation.</p>
+              </div>
+              <div class="doc-card-actions">
+                <button class="doc-btn-view btn-view-pdf" data-src="./reports/cs491-report.html"
+                  data-title="CS 491 Final Paper - Merck AI Chatbot" id="doc-view-merck">⛶ View Fullscreen</button>
+                <a class="doc-btn-dl" href="./reports/cs491-report.html" target="_blank" rel="noopener"
+                  id="doc-dl-merck">↗ Open Report</a>
+                <a class="doc-btn-dl" href="./Copy of CS 491 Final Paper.pdf" target="_blank" rel="noopener">↓ Official
+                  PDF</a>
+              </div>
+            </div>
+            <div class="doc-embed-wrap">
+              <iframe src="./reports/cs491-report.html" class="doc-embed" title="CS 491 Final Paper" loading="lazy"
+                aria-label="Embedded PDF: CS 491 Final Paper"></iframe>
+            </div>
+          </div>
+
+          <!-- Frodo -->
+          <div class="doc-card reveal reveal-delay-2">
+            <div class="doc-card-header">
+              <div class="doc-card-meta">
+                <span class="doc-badge badge-cyber">CS 647 - Command Injection</span>
+                <h3 class="doc-card-title">Frodo Lab - Assessment Report</h3>
+                <p class="doc-card-sub">Command injection exploitation via unsanitized iPrint input. GDB/ltrace/strace
+                  dynamic analysis.</p>
+              </div>
+              <div class="doc-card-actions">
+                <button class="doc-btn-view btn-view-pdf" data-src="./reports/frodo-report.html"
+                  data-title="Frodo Assessment Report - Command Injection" id="doc-view-frodo">⛶ View
+                  Fullscreen</button>
+                <a class="doc-btn-dl" href="./reports/frodo-report.html" target="_blank" rel="noopener"
+                  id="doc-dl-frodo">↗ Open Report</a>
+              </div>
+            </div>
+            <div class="doc-embed-wrap">
+              <iframe src="./reports/frodo-report.html" class="doc-embed" title="Frodo Assessment Report" loading="lazy"
+                aria-label="Embedded PDF: Frodo Assessment Report"></iframe>
+            </div>
+          </div>
+
+          <!-- Merry -->
+          <div class="doc-card reveal reveal-delay-3">
+            <div class="doc-card-header">
+              <div class="doc-card-meta">
+                <span class="doc-badge badge-cyber">CS 647 - Stack Buffer Overflow</span>
+                <h3 class="doc-card-title">Merry Lab - Assessment Report</h3>
+                <p class="doc-card-sub">strcpy() buffer overflow exploit to redirect execution to getFlag. GDB-based
+                  address calculation.</p>
+              </div>
+              <div class="doc-card-actions">
+                <button class="doc-btn-view btn-view-pdf" data-src="./reports/merry-report.html"
+                  data-title="Merry Assessment Report - Stack Buffer Overflow" id="doc-view-merry">⛶ View
+                  Fullscreen</button>
+                <a class="doc-btn-dl" href="./reports/merry-report.html" target="_blank" rel="noopener"
+                  id="doc-dl-merry">↗ Open Report</a>
+              </div>
+            </div>
+            <div class="doc-embed-wrap">
+              <iframe src="./reports/merry-report.html" class="doc-embed" title="Merry Assessment Report" loading="lazy"
+                aria-label="Embedded PDF: Merry Assessment Report"></iframe>
+            </div>
+          </div>
+
+          <!-- Sam -->
+          <div class="doc-card reveal reveal-delay-1">
+            <div class="doc-card-header">
+              <div class="doc-card-meta">
+                <span class="doc-badge badge-cyber">CS 647 - Shellcode Injection</span>
+                <h3 class="doc-card-title">Sam Lab - Assessment Report</h3>
+                <p class="doc-card-sub">NOP sled + custom shellcode payload to spawn an interactive shell via strcpy()
+                  overflow.</p>
+              </div>
+              <div class="doc-card-actions">
+                <button class="doc-btn-view btn-view-pdf" data-src="./reports/sam-report.html"
+                  data-title="Sam Assessment Report - Shellcode Injection" id="doc-view-sam">⛶ View Fullscreen</button>
+                <a class="doc-btn-dl" href="./reports/sam-report.html" target="_blank" rel="noopener" id="doc-dl-sam">↗
+                  Open Report</a>
+              </div>
+            </div>
+            <div class="doc-embed-wrap">
+              <iframe src="./reports/sam-report.html" class="doc-embed" title="Sam Assessment Report" loading="lazy"
+                aria-label="Embedded PDF: Sam Assessment Report"></iframe>
+            </div>
+          </div>
+
+          <!-- Pippin -->
+          <div class="doc-card reveal reveal-delay-2">
+            <div class="doc-card-header">
+              <div class="doc-card-meta">
+                <span class="doc-badge badge-forensics">CS 647 - Digital Forensics</span>
+                <h3 class="doc-card-title">Pippin Lab - Assessment Report</h3>
+                <p class="doc-card-sub">Nested archive forensics, SSH key extraction, and SMB credential harvesting.</p>
+              </div>
+              <div class="doc-card-actions">
+                <button class="doc-btn-view btn-view-pdf" data-src="./reports/pippin-report.html"
+                  data-title="Pippin Assessment Report - Digital Forensics &amp; SSH" id="doc-view-pippin">⛶ View
+                  Fullscreen</button>
+                <a class="doc-btn-dl" href="./reports/pippin-report.html" target="_blank" rel="noopener"
+                  id="doc-dl-pippin">↗ Open Report</a>
+              </div>
+            </div>
+            <div class="doc-embed-wrap">
+              <iframe src="./reports/pippin-report.html" class="doc-embed" title="Pippin Assessment Report"
+                loading="lazy" aria-label="Embedded PDF: Pippin Assessment Report"></iframe>
+            </div>
+          </div>
+
+          <!-- Legolas -->
+          <div class="doc-card reveal reveal-delay-3">
+            <div class="doc-card-header">
+              <div class="doc-card-meta">
+                <span class="doc-badge badge-cyber">CS 647 - ASLR+SSP+DEP Bypass</span>
+                <h3 class="doc-card-title">Legolas Lab - Assessment Report</h3>
+                <p class="doc-card-sub">Triple memory protection bypass: format string leak + return-to-libc. Most
+                  advanced exploit in the course.</p>
+              </div>
+              <div class="doc-card-actions">
+                <button class="doc-btn-view btn-view-pdf" data-src="./reports/legolas-report.html"
+                  data-title="Legolas Assessment Report - ASLR+SSP+DEP Bypass" id="doc-view-legolas">⛶ View
+                  Fullscreen</button>
+                <a class="doc-btn-dl" href="./reports/legolas-report.html" target="_blank" rel="noopener"
+                  id="doc-dl-legolas">↗ Open Report</a>
+              </div>
+            </div>
+            <div class="doc-embed-wrap">
+              <iframe src="./reports/legolas-report.html" class="doc-embed" title="Legolas Assessment Report"
+                loading="lazy" aria-label="Embedded PDF: Legolas Assessment Report"></iframe>
+            </div>
+          </div>
+
+          <!-- ARP Poisoning + Cisco (external links) -->
+          <div class="doc-card doc-card-link reveal reveal-delay-4">
+            <div class="doc-card-header">
+              <div class="doc-card-meta">
+                <span class="doc-badge badge-network">CS 646 - Network Security</span>
+                <h3 class="doc-card-title">ARP Poisoning Lab Report</h3>
+                <p class="doc-card-sub">Full write-up of the ARP poisoning MITM attack, Wireshark captures, and
+                  mitigations. Hosted on Google Docs.</p>
+              </div>
+              <div class="doc-card-actions">
+                <a class="doc-btn-view"
+                  href="https://docs.google.com/document/d/18npG6iiGUACk-l5rVNzs2pXTlTBUrNzkemu6FkFpRBM/edit?usp=sharing"
+                  target="_blank" rel="noopener" id="doc-view-arp">↗ Open Google Doc</a>
+              </div>
+            </div>
+            <div class="doc-external-placeholder">
+              <span>🔗</span>
+              <p>Hosted externally - click "Open Google Doc" above to view. Requires the recipient's Google account
+                access level.</p>
+            </div>
+          </div>
+
+          <!-- Cisco PKT -->
+          <div class="doc-card doc-card-link reveal reveal-delay-5">
+            <div class="doc-card-header">
+              <div class="doc-card-meta">
+                <span class="doc-badge badge-network">CS 646 - Cisco Networking</span>
+                <h3 class="doc-card-title">Cisco Packet Tracer Project</h3>
+                <p class="doc-card-sub">Multi-router VLSM topology file. Open with Cisco Packet Tracer 8.x to simulate
+                  and verify the network configuration live.</p>
+              </div>
+              <div class="doc-card-actions">
+                <a class="doc-btn-view" href="./project.pkt" download id="doc-dl-pkt">↓ Download .pkt File</a>
+                <a class="doc-btn-dl"
+                  href="https://docs.google.com/document/d/1kORE84PribdnG_0LSdjEIhCZVlqOKWsbzfFdajd_5dU/edit?usp=sharing"
+                  target="_blank" rel="noopener" id="doc-view-cisco-table">↗ Address Table (Google Doc)</a>
+              </div>
+            </div>
+            <div class="doc-external-placeholder">
+              <span>📡</span>
+              <p>Cisco Packet Tracer simulation file (.pkt) - download and open in Cisco Packet Tracer to verify the
+                live network topology and routing tables.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+
+    <section id="education" aria-label="Education">
+      <div class="container">
+        <p class="section-label reveal">Education</p>
+        <h2 class="section-title reveal reveal-delay-1">Academic Foundation</h2>
+        <p class="section-subtitle reveal reveal-delay-2">Graduate-level coursework at NJIT combining network security,
+          counter-hacking, and engineering capstone projects.</p>
+
+        <div class="education-timeline">
+
+          <div class="edu-item reveal reveal-delay-1">
+            <div class="edu-dot" aria-hidden="true"></div>
+            <p class="edu-date">2024 - Present</p>
+            <h3 class="edu-school">New Jersey Institute of Technology (NJIT)</h3>
+            <p class="edu-degree">Master of Science - Cybersecurity &amp; Privacy</p>
+            <div class="edu-courses">
+              <div class="edu-course">
+                <span class="edu-course-code">CS 491</span>
+                <span class="edu-course-name">Senior Capstone - Merck AI Scenario Planning Chatbot (Lead
+                  Developer)</span>
+              </div>
+              <div class="edu-course">
+                <span class="edu-course-code">CS 646</span>
+                <span class="edu-course-name">Network Protocols &amp; Security - ARP Poisoning, Wireshark, Cisco Packet
+                  Tracer</span>
+              </div>
+              <div class="edu-course">
+                <span class="edu-course-code">CS 647</span>
+                <span class="edu-course-name">Counter Hacking Techniques - Binary Exploitation, Forensics, Memory
+                  Attacks</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="edu-item reveal reveal-delay-2">
+            <div class="edu-dot" aria-hidden="true"></div>
+            <p class="edu-date">Completed</p>
+            <h3 class="edu-school">Bachelor's Degree</h3>
+            <p class="edu-degree">Computer Science - Undergraduate Foundation</p>
+            <div class="edu-courses">
+              <div class="edu-course">
+                <span class="edu-course-code">Core</span>
+                <span class="edu-course-name">Data Structures, Algorithms, Operating Systems, Computer Networks</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         CONTACT
+    ═══════════════════════════════════════════════ -->
+    <section id="contact" aria-label="Contact Percy Flores">
+      <div class="container">
+        <div class="contact-inner reveal">
+          <h2 class="contact-title">Let's Build Something<br><span class="text-accent-blue">Together</span></h2>
+          <p class="contact-sub">
+            I am actively seeking internship opportunities in Cybersecurity and IT. Whether you'd like to discuss a
+            role,
+            provide feedback on my work, or simply connect - I'd love to hear from you.
+          </p>
+          <div class="contact-links">
+            <a href="mailto:pef3@njit.edu" class="contact-link contact-primary" id="contact-email-school">
+              <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                aria-hidden="true">
+                <path
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              School Email (pef3@njit.edu)
+            </a>
+            <a href="mailto:percyflores.edu@gmail.com" class="contact-link" id="contact-email-personal">
+              <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                aria-hidden="true" style="color:var(--accent-blue)">
+                <path
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              Personal Email
+            </a>
+            <a href="tel:8622131901" class="contact-link" id="contact-phone">
+              <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                aria-hidden="true" style="color:var(--accent-blue)">
+                <path
+                  d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
+              (862) 213-1901
+            </a>
+            <a href="https://www.linkedin.com/in/percy-flores" target="_blank" rel="noopener noreferrer"
+              class="contact-link" id="contact-linkedin">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
+                style="color:var(--accent-blue)">
+                <path
+                  d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+              </svg>
+              LinkedIn Profile
+            </a>
+          </div>
+          <p class="contact-disclaimer">
+            📍 New Jersey, USA &nbsp;·&nbsp; 🎓 NJIT Master's Candidate &nbsp;·&nbsp; 🔐 Cybersecurity &amp; IT Focus
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═══════════════════════════════════════════════
+       FOOTER
+  ═══════════════════════════════════════════════ -->
+  <footer id="footer" role="contentinfo">
+    <div class="container">
+      <p class="footer-text">
+        Designed &amp; built by <span>Percy Flores</span> &nbsp;·&nbsp;
+        NJIT Master's Student &nbsp;·&nbsp;
+        <span>2026</span>
+      </p>
+    </div>
+  </footer>
+
+  <!-- ═══════════════════════════════════════════════
+       PROJECT MODAL
+  ═══════════════════════════════════════════════ -->
+  <div id="modal-overlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal" id="modal-body">
+      <!-- Content injected by JS -->
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       PDF FULL-SCREEN VIEWER
+  ═══════════════════════════════════════════════ -->
+  <div id="pdf-viewer-overlay" class="pdf-viewer-overlay" role="dialog" aria-modal="true" aria-label="PDF Viewer">
+    <div class="pdf-viewer-inner">
+      <div class="pdf-viewer-bar">
+        <span id="pdf-viewer-title" class="pdf-viewer-title"></span>
+        <button id="pdf-viewer-close" class="pdf-viewer-close" aria-label="Close PDF viewer">✕ Close</button>
+      </div>
+      <iframe id="pdf-viewer-frame" class="pdf-viewer-frame" title="PDF Document Viewer"></iframe>
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+
+</html>

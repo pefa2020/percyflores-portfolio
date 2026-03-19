@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Merck AI Scenario Planning - CS 491 Capstone | Percy Flores</title>
+  <link rel="stylesheet" href="./report-style.css" />
+</head>
+<body>
+
+<div class="report-topbar">
+  <a class="topbar-logo" href="../index.html">[ percy.flores ]</a>
+  <div class="topbar-actions">
+    <a class="btn-back" href="../index.html#documents">← Back to Portfolio</a>
+    <button class="btn-print" onclick="window.print()">⎙ Print / Save PDF</button>
+    <button class="theme-btn" id="theme-btn" title="Toggle theme">🌙</button>
+  </div>
+</div>
+
+<div class="report-wrap">
+
+  <!-- ══ HEADER ══ -->
+  <header class="report-header">
+    <div class="report-meta-top">
+      <span class="badge-course">CS 491 - Senior Capstone</span>
+      <span class="badge-type">Final Technical Report</span>
+    </div>
+    <h1 class="report-title">Merck AI Scenario Planning Chatbot</h1>
+    <p class="report-subtitle">Developing an LLM-driven project scheduling tool using Next.js, AI SDK, and tool-calling for Merck's planning workflows.</p>
+    <div class="report-meta-grid">
+      <div class="meta-item"><span class="meta-label">Author / Lead Dev</span><span class="meta-value">Percy Flores</span></div>
+      <div class="meta-item"><span class="meta-label">Institution</span><span class="meta-value">NJIT</span></div>
+      <div class="meta-item"><span class="meta-label">Course</span><span class="meta-value">CS 491 - Spring 2025</span></div>
+      <div class="meta-item"><span class="meta-label">Sponsor</span><span class="meta-value">Ryan Blanton (Merck)</span></div>
+      <div class="meta-item"><span class="meta-label">Tech Stack</span><span class="meta-value">Next.js, Server Actions, Vercel Blob</span></div>
+      <div class="meta-item"><span class="meta-label">Outcome</span><span class="meta-value">✓ Successfully Deployed</span></div>
+    </div>
+  </header>
+
+  <!-- ══ ABSTRACT ══ -->
+  <div class="abstract">
+    <div class="abstract-label">Abstract</div>
+    <p>
+      The AI Planning Scenario Chatbot project was developed as my final Capstone under the sponsorship of Ryan Blanton from Merck. The primary objective was to create a conversational interface that allows users to upload and interact with Microsoft Project plan files, enabling natural language exploration of project tasks, schedules, and dependencies. By replacing rigid, manual methods of interpreting project plans, this LLM-driven chatbot brings automation and conversational intelligence directly into the enterprise planning workflow. As the lead full-stack developer, I architected the Next.js application, integrated the AI runtime, and engineered the function-calling logic that maps natural language queries to discrete data operations.
+    </p>
+  </div>
+
+  <!-- ══ 1. ARCHITECTURE ══ -->
+  <section class="report-section">
+    <span class="section-num">§ 1</span>
+    <h2 class="section-heading">System Architecture & Tech Stack</h2>
+    <p>I designed the application using a modern, scalable, serverless-first architecture optimized for generative AI workloads.</p>
+    <ul class="steps">
+      <li><strong>Frontend / Framework:</strong> Built on <strong>Next.js 14 (App Router)</strong> leveraging React Server Components for optimized rendering and secure server-side execution of AI tasks.</li>
+      <li><strong>UI Components:</strong> Implemented accessible, styled components using <strong>Shadcn/ui</strong> and Tailwind CSS, adhering to enterprise design standards.</li>
+      <li><strong>Storage:</strong> Integrated <strong>Vercel Blob</strong> to securely handle and parse uploaded project scheduling documents.</li>
+      <li><strong>Database:</strong> Deployed a <strong>Neon Severless Postgres</strong> instance mapped via Prisma ORM for relational persistence of chat histories and project metadata.</li>
+      <li><strong>AI Integration:</strong> Utilized the <strong>Vercel AI SDK</strong> to stream LLM responses and manage the conversational state between the client and the OpenAI/Anthropic runtime providers.</li>
+    </ul>
+  </section>
+
+  <!-- ══ 2. TOOL CALLING & IMPLEMENTATION ══ -->
+  <section class="report-section">
+    <span class="section-num">§ 2</span>
+    <h2 class="section-heading">LLM Tool Calling Implementation</h2>
+    <p>To give the chatbot the ability to actually perform actions rather than just chat, I engineered a robust <strong>tool-calling (function-calling)</strong> pipeline. When the LLM determines a user query requires data manipulation or retrieval, it invokes specific server-side functions I exposed to its runtime context.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">TYPESCRIPT - TOOL CALLING REGISTRY</span><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div></div>
+      <pre>const tools = {
+  getProjectSummary: tool({
+    description: 'Retrieves the high level summary of the uploaded project plan.',
+    parameters: z.object({ projectId: z.string() }),
+    execute: async ({ projectId }) => fetchSummary(projectId),
+  }),
+  findTaskDependencies: tool({
+    description: 'Finds blocking upstream tasks for a specific task.',
+    parameters: z.object({ taskName: z.string() }),
+    execute: async ({ taskName }) => queryDependencies(taskName),
+  }),
+  // 7 additional tools engineered for MS Project queries...
+};</pre>
+    </div>
+
+    <p>By defining strict <code>zod</code> schemas, the LLM is forced to return highly structured JSON matching the expected parameter types, preventing runtime errors and ensuring deterministic data querying. The AI SDK seamlessly handles the conversational loop, calling my functions, awaiting the Promises, and returning the aggregated data to the user in natural language.</p>
+  </section>
+
+  <!-- ══ 3. DEPLOYMENT & EVALUATION ══ -->
+  <section class="report-section">
+    <span class="section-num">§ 3</span>
+    <h2 class="section-heading">Deployment & Evaluation</h2>
+    <p>The application was deployed seamlessly to Vercel, providing automated CI/CD directly from the GitHub repository. During testing, the chatbot successfully parsed complex Microsoft Project constraint structures and correctly answered multi-hop queries (e.g., <em>"If Task A is delayed by 3 days, what is the impact on Milestone B?"</em>) by utilizing the <code>findTaskDependencies</code> and <code>impactAnalysis</code> tools.</p>
+    
+    <div class="callout callout-success">
+      <span class="callout-icon">✓</span>
+      <div class="callout-body">
+        <h4>Sponsor Acceptance</h4>
+        <p>The final deliverable met all core functional requirements outlined by the Merck sponsor, successfully demonstrating how an LLM can automate complex scheduling analytics.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ APPENDIX: PROOF ══ -->
+  <section class="report-section" style="margin-top: 60px; border-top: 1px dashed var(--border); padding-top: 40px;">
+    <h2 class="section-heading">Appendix: Raw Execution Evidence</h2>
+    <p>The following are the raw screenshots and diagrams captured during the original execution and presentation of the Capstone project.</p>
+    <div style="display: flex; flex-direction: column; gap: 20px; align-items: center; margin-top: 30px;">
+            <img src="./images/cs491_proof_1.png" alt="Merck Project Detail" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/cs491_proof_2.png" alt="Merck Project Detail" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/cs491_proof_3.png" alt="Merck Project Detail" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/cs491_proof_4.png" alt="Merck Project Detail" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/cs491_proof_5.png" alt="Merck Project Detail" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/cs491_proof_6.png" alt="Merck Project Detail" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/cs491_proof_7.png" alt="Merck Project Detail" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/cs491_proof_8.png" alt="Merck Project Detail" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/cs491_proof_9.png" alt="Merck Project Detail" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/cs491_proof_10.png" alt="Merck Project Detail" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/cs491_proof_11.png" alt="Merck Project Detail" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/cs491_proof_12.png" alt="Merck Project Detail" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/cs491_proof_13.png" alt="Merck Project Detail" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/cs491_proof_14.png" alt="Merck Project Detail" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/cs491_proof_15.png" alt="Merck Project Detail" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/cs491_proof_16.png" alt="Merck Project Detail" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/cs491_proof_17.png" alt="Merck Project Detail" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/cs491_proof_18.png" alt="Merck Project Detail" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/cs491_proof_19.png" alt="Merck Project Detail" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/cs491_proof_20.png" alt="Merck Project Detail" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/cs491_proof_21.png" alt="Merck Project Detail" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/cs491_proof_22.png" alt="Merck Project Detail" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/cs491_proof_23.png" alt="Merck Project Detail" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/cs491_proof_24.png" alt="Merck Project Detail" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/cs491_proof_25.png" alt="Merck Project Detail" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/cs491_proof_26.png" alt="Merck Project Detail" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+    </div>
+  </section>
+
+  <footer class="report-footer">
+    <span>Percy Flores - CS 491 Capstone, NJIT, Spring 2025</span>
+    <span>Merck AI Scenario Planning Final Report</span>
+  </footer>
+
+</div>
+
+<script>
+  const html = document.documentElement;
+  const btn  = document.getElementById('theme-btn');
+  const saved = localStorage.getItem('pf-theme') || 'dark';
+  html.setAttribute('data-theme', saved);
+  if (btn) btn.textContent = saved === 'dark' ? '🌙' : '☀️';
+  btn?.addEventListener('click', () => {
+    const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('pf-theme', next);
+    btn.textContent = next === 'dark' ? '🌙' : '☀️';
+  });
+</script>
+</body>
+</html>

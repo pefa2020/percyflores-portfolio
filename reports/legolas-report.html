@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Legolas Lab - ASLR & DEP Bypass Assessment | Percy Flores</title>
+  <link rel="stylesheet" href="./report-style.css" />
+</head>
+<body>
+
+<div class="report-topbar">
+  <a class="topbar-logo" href="../index.html">[ percy.flores ]</a>
+  <div class="topbar-actions">
+    <a class="btn-back" href="../index.html#documents">← Back to Portfolio</a>
+    <button class="btn-print" onclick="window.print()">⎙ Print / Save PDF</button>
+    <button class="theme-btn" id="theme-btn" title="Toggle theme">🌙</button>
+  </div>
+</div>
+
+<div class="report-wrap">
+
+  <!-- ══ HEADER ══ -->
+  <header class="report-header">
+    <div class="report-meta-top">
+      <span class="badge-course">CS 647 - Counter Hacking Techniques</span>
+      <span class="badge-type">Lab Assessment Report</span>
+    </div>
+    <h1 class="report-title">Legolas Lab: Memory Mitigation<br>Triple Bypass (ASLR, SSP, DEP)</h1>
+    <p class="report-subtitle">Chaining a format string information leak with a Return-Oriented Programming (ROP) payload to defeat modern exploit mitigations.</p>
+    <div class="report-meta-grid">
+      <div class="meta-item"><span class="meta-label">Author</span><span class="meta-value">Percy Flores</span></div>
+      <div class="meta-item"><span class="meta-label">Institution</span><span class="meta-value">NJIT</span></div>
+      <div class="meta-item"><span class="meta-label">Course</span><span class="meta-value">CS 647 - Fall 2025</span></div>
+      <div class="meta-item"><span class="meta-label">Lab Target</span><span class="meta-value">Legolas (Format String + BOF)</span></div>
+      <div class="meta-item"><span class="meta-label">Vulnerability Class</span><span class="meta-value">CWE-134 (Format String) + CWE-121</span></div>
+      <div class="meta-item"><span class="meta-label">Outcome</span><span class="meta-value">✓ Interactive Shell (Mitigations Defeated)</span></div>
+    </div>
+  </header>
+
+  <!-- ══ ABSTRACT ══ -->
+  <div class="abstract">
+    <div class="abstract-label">Abstract</div>
+    <p>
+      This assessment represents the highest difficulty tier, targeting a binary protected by modern memory mitigations: Address Space Layout Randomization (ASLR), Stack Smashing Protection (SSP/Canaries), and Data Execution Prevention (DEP/NX). Standard buffer overflows and shellcode injection fail in this environment. I successfully chained two distinct vulnerabilities-an initial format string vulnerability (<code>printf</code>) to leak dynamic memory addresses, followed by a stack buffer overflow. By dynamically calculating the ASLR offsets for the stack canary and the <code>libc</code> base address, I constructed a Return-Oriented Programming (ROP) payload that elegantly circumvented DEP by executing the <code>system("/bin/sh")</code> function already resident in executable memory.
+    </p>
+  </div>
+
+  <!-- ══ 1. ENVIRONMENT ══ -->
+  <section class="report-section">
+    <span class="section-num">§ 1</span>
+    <h2 class="section-heading">Environment Setup & Mitigations</h2>
+    <p>The target binary was compiled with all modern security features enabled, necessitating a multi-stage exploit chain.</p>
+    <table class="report-table">
+      <thead>
+        <tr><th>Mitigation</th><th>Status</th><th>Exploit Implication</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>ASLR</strong> (System-wide & PIE)</td><td>Enabled</td><td>Addresses change on every execution. Hardcoding memory locations is impossible. Leak required.</td></tr>
+        <tr><td><strong>SSP</strong> (Stack Canaries)</td><td>Enabled</td><td>A random value protects the return pointer. Sequential overwrites will trigger a crash (<code>SIGABRT</code>) unless the canary is leaked and rewritten identically.</td></tr>
+        <tr><td><strong>DEP/NX</strong> (Non-Executable Stack)</td><td>Enabled</td><td>Injected shellcode will not execute. Must use Return-Oriented Programming (Return-to-libc).</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ══ 2. VULNERABILITY ANALYSIS ══ -->
+  <section class="report-section">
+    <span class="section-num">§ 2</span>
+    <h2 class="section-heading">Information Leak: Format String Vulnerability</h2>
+
+    <h3 class="subsection">2.1 Identifying the Leak</h3>
+    <p>Static analysis identified an unsafe <code>printf(user_input)</code> call occurring prior to a vulnerable buffer overflow. By supplying format specifiers (<code>%p</code>), I forced the program to print values directly off the stack.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">BASH - MEMORY LEAK</span><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div></div>
+      <pre><span class="hl-prompt">legolas@lab:~$</span> <span class="hl-cmd">./vuln</span> <span class="hl-str">"%11\$p %15\$p"</span>
+Leaked: 0x9b4f2a00 0xb7e21a83</pre>
+    </div>
+
+    <h3 class="subsection">2.2 Decrypting the Leak</h3>
+    <p>Using GDB, I mathematically mapped the leaked hex values to their structural purposes:</p>
+    <ol class="steps">
+      <li><strong>Stack Canary (Offset 11):</strong> The value ending in <code>00</code> (e.g., <code>0x9b4f2a00</code>) is the randomized stack canary. This exact 4-byte value must be placed back into the payload to pass the SSP check.</li>
+      <li><strong>Libc Base Address (Offset 15):</strong> A pointer into the <code>libc</code> library. By subtracting the known static offset (e.g., <code>0x1d83</code>) of that specific instruction within `libc`, I calculated the dynamic <strong>Libc Base Address</strong> for the current execution instance.</li>
+    </ol>
+  </section>
+
+  <!-- ══ 3. PAYLOAD CONSTRUCTION ══ -->
+  <section class="report-section">
+    <span class="section-num">§ 3</span>
+    <h2 class="section-heading">ROP Payload Engineering</h2>
+
+    <h3 class="subsection">3.1 Defeating DEP via Return-to-Libc</h3>
+    <p>Because the stack is strictly non-executable (DEP), placing standard shellcode is futile. Instead, I structured the stack to mimic a function call to the C standard library's <code>system()</code> function, passing it the string <code>"/bin/sh"</code> as an argument. Both the function and the string exist natively within <code>libc</code>.</p>
+    
+    <p>Once the Libc Base Address was dynamically calculated via the leak, I applied absolute offsets to locate the target gadgets:</p>
+    <ul class="steps">
+      <li><code>system()</code> Address = <code>Libc_Base + 0x3ada0</code></li>
+      <li><code>exit()</code> Address = <code>Libc_Base + 0x2e9c0</code> (for graceful termination)</li>
+      <li><code>"/bin/sh"</code> String = <code>Libc_Base + 0x15b82b</code></li>
+    </ul>
+
+    <h3 class="subsection">3.2 The Final ROP Chain</h3>
+    <p>The final exploit reconstructs the stack frame perfectly, bypassing the canary check, and hijacking the return pointer to initiate the ROP chain.</p>
+    
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">ASLR BYPASS ROP CHAIN</span><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div></div>
+      <pre>[ Padding : 24 bytes ]
+[ Leaked Canary : 4 bytes ]
+[ Padding to EIP : 8 bytes ]
+[ Address of system() ]
+[ Address of exit() ] (Return address for system)
+[ Address of "/bin/sh" ] (Argument 1 for system)</pre>
+    </div>
+  </section>
+
+  <!-- ══ 4. EXPLOITATION ══ -->
+  <section class="report-section">
+    <span class="section-num">§ 4</span>
+    <h2 class="section-heading">Execution & Flag Retrieval</h2>
+
+    <p>Because ASLR randomizes addresses on <em>every execution</em>, the exploit cannot be a static payload. I authored a Python wrapper script using the <code>pwntools</code> framework to interact with the binary, capture the format string leak, dynamically calculate the ROP chain offsets in milliseconds, and fire the final exploit string into the vulnerable buffer prompt.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PYTHON - PWNTOOLS EXPLOIT</span><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div></div>
+      <pre><span class="hl-prompt">$</span> <span class="hl-cmd">python3</span> <span class="hl-str">exploit.py</span>
+[+] Starting local process './vuln': pid 4182
+[*] Leaked Canary: 0x4a9b2100
+[*] Leaked Libc: 0xb7d12a83
+[*] Calculated Libc Base: 0xb7cf5000
+[*] Sending ROP Chain...
+[+] Switching to interactive mode
+$ <span class="hl-cmd">whoami</span>
+legolas
+$ <span class="hl-cmd">cat flag.txt</span>
+<span class="hl-addr">legolasflag{4slr_d3p_ssp_m4st3r_byp4ss}</span></pre>
+    </div>
+
+    <div class="callout callout-success">
+      <span class="callout-icon">🎯</span>
+      <div class="callout-body">
+        <h4>Triple Bypass Achieved</h4>
+        <p>The script successfully leaked the runtime ASLR footprint, passed the SSP validation, and defeated DEP using Return-to-Libc to spawn an interactive shell.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 5. MITIGATIONS ══ -->
+  <section class="report-section">
+    <span class="section-num">§ 5</span>
+    <h2 class="section-heading">Defensive Mitigations</h2>
+    <p>Mitigation for advanced, chained attacks requires addressing the <em>root cause</em> rather than relying purely on OS-level band-aids:</p>
+    <ol class="steps">
+      <li><strong>Fix Format String Vulnerabilities:</strong> Never use <code>printf(user_input)</code>. Always strictly define format specifiers: <code>printf("%s", user_input)</code>. This eliminates the memory leak that makes ASLR bypass possible.</li>
+      <li><strong>Eliminate Buffer Overflows:</strong> Without the capability to overflow the buffer into the return pointer in the first place, the ROP chain cannot be staged. Replace unsafe bounds-ignorant functions.</li>
+      <li><strong>Control Flow Integrity (CFI):</strong> Implement hardware-enforced CFI (like Intel CET) to protect backward-edge execution (return pointers), structurally preventing Return-Oriented Programming hijack attempts independent of ASLR.</li>
+    </ol>
+  </section>
+
+
+  <!-- ══ APPENDIX: PROOF ══ -->
+  <section class="report-section" style="margin-top: 60px; border-top: 1px dashed var(--border); padding-top: 40px;">
+    <h2 class="section-heading">Appendix: Raw Execution Evidence</h2>
+    <p>The following are the raw screenshots captured during the original execution of this lab on the target VM network.</p>
+    <div style="display: flex; flex-direction: column; gap: 20px; align-items: center; margin-top: 30px;">
+      <img src="./images/legolas_proof_1.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/legolas_proof_2.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/legolas_proof_3.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/legolas_proof_4.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/legolas_proof_5.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/legolas_proof_6.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/legolas_proof_7.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/legolas_proof_8.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/legolas_proof_9.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/legolas_proof_10.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/legolas_proof_11.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/legolas_proof_12.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/legolas_proof_13.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/legolas_proof_14.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/legolas_proof_15.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/legolas_proof_16.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/legolas_proof_17.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/legolas_proof_18.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/legolas_proof_19.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/legolas_proof_20.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+    </div>
+  </section>
+
+  <footer class="report-footer">
+    <span>Percy Flores - CS 647 Counter Hacking Techniques, NJIT, Fall 2025</span>
+    <span>Legolas Lab Assessment Report</span>
+  </footer>
+
+</div>
+
+<script>
+  const html = document.documentElement;
+  const btn  = document.getElementById('theme-btn');
+  const saved = localStorage.getItem('pf-theme') || 'dark';
+  html.setAttribute('data-theme', saved);
+  if (btn) btn.textContent = saved === 'dark' ? '🌙' : '☀️';
+  btn?.addEventListener('click', () => {
+    const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('pf-theme', next);
+    btn.textContent = next === 'dark' ? '🌙' : '☀️';
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sam Lab - Shellcode Injection Assessment | Percy Flores</title>
+  <link rel="stylesheet" href="./report-style.css" />
+</head>
+<body>
+
+<div class="report-topbar">
+  <a class="topbar-logo" href="../index.html">[ percy.flores ]</a>
+  <div class="topbar-actions">
+    <a class="btn-back" href="../index.html#documents">← Back to Portfolio</a>
+    <button class="btn-print" onclick="window.print()">⎙ Print / Save PDF</button>
+    <button class="theme-btn" id="theme-btn" title="Toggle theme">🌙</button>
+  </div>
+</div>
+
+<div class="report-wrap">
+
+  <!-- ══ HEADER ══ -->
+  <header class="report-header">
+    <div class="report-meta-top">
+      <span class="badge-course">CS 647 - Counter Hacking Techniques</span>
+      <span class="badge-type">Lab Assessment Report</span>
+    </div>
+    <h1 class="report-title">Sam Lab: Shellcode Injection<br>via Buffer Overflow</h1>
+    <p class="report-subtitle">Advanced execution hijacking using a custom NOP sled and shellcode payload to spawn an interactive shell.</p>
+    <div class="report-meta-grid">
+      <div class="meta-item"><span class="meta-label">Author</span><span class="meta-value">Percy Flores</span></div>
+      <div class="meta-item"><span class="meta-label">Institution</span><span class="meta-value">NJIT</span></div>
+      <div class="meta-item"><span class="meta-label">Course</span><span class="meta-value">CS 647 - Fall 2025</span></div>
+      <div class="meta-item"><span class="meta-label">Lab Target</span><span class="meta-value">Sam (helloVuln5 application)</span></div>
+      <div class="meta-item"><span class="meta-label">Vulnerability Class</span><span class="meta-value">CWE-121: Stack-based Buffer Overflow</span></div>
+      <div class="meta-item"><span class="meta-label">Outcome</span><span class="meta-value">✓ Interactive Shell Spawned</span></div>
+    </div>
+  </header>
+
+  <!-- ══ ABSTRACT ══ -->
+  <div class="abstract">
+    <div class="abstract-label">Abstract</div>
+    <p>
+      This report documents the exploitation of a stack-based buffer overflow in the <code>helloVuln5</code> binary. Moving beyond simple return-address subversion, this engagement required injecting custom executable code (shellcode) directly into the vulnerable program's memory space and redirecting execution flow to it. I engineered a three-part payload comprising a 132-byte NOP sled, a custom <code>/bin/sh</code> spawning shellcode module, and a precisely calculated return address overwrite. The successful exploit yielded an interactive shell in the context of the target <code>sam</code> user account.
+    </p>
+  </div>
+
+  <!-- ══ 1. ENVIRONMENT ══ -->
+  <section class="report-section">
+    <span class="section-num">§ 1</span>
+    <h2 class="section-heading">Environment Setup & Constraints</h2>
+    <p>The target environment for this assessment intentionally lacks modern execution prevention to demonstrate fundamental code injection mechanics.</p>
+    <table class="report-table">
+      <thead>
+        <tr><th>Protection Mechanism</th><th>Status</th><th>Implication</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>DEP/NX</strong> (Data Execution Prevention)</td><td>Disabled</td><td>Memory designated for data (the stack) is marked as executable, allowing our injected shellcode to run.</td></tr>
+        <tr><td><strong>ASLR</strong> (Address Space Layout Randomization)</td><td>Disabled</td><td>Stack addresses remain constant across different executions of the binary.</td></tr>
+        <tr><td><strong>SSP</strong> (Stack Canaries)</td><td>Disabled</td><td>No runtime detection of stack frame corruption.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ══ 2. VULNERABILITY ANALYSIS ══ -->
+  <section class="report-section">
+    <span class="section-num">§ 2</span>
+    <h2 class="section-heading">Memory Layout & Shellcode Strategy</h2>
+
+    <h3 class="subsection">2.1 Stack Layout Analysis</h3>
+    <p>Using the GNU Debugger (GDB), I initiated an analysis of the stack frame allocated for the vulnerable function in <code>helloVuln5</code>. Unlike previous labs where the goal was to call an existing pre-loaded function, the goal here is to jump into the middle of the buffer we control.</p>
+    <p>To improve exploit reliability, a <strong>NOP Sled</strong> (No-Operation instructions, opcode <code>\x90</code>) is utilized. If the hijacked return pointer lands anywhere within the sled, execution "slides" safely down into the shellcode payload.</p>
+
+    <h3 class="subsection">2.2 Determining Target Addresses</h3>
+    <p>By inspecting memory allocation inside GDB, I observed the buffer starting around <code>0xffffce60</code>. Given the padding requirements, I selected <code>0xffffcee0</code> as a reliable landing address squarely in the middle of the intended NOP sled.</p>
+  </section>
+
+  <!-- ══ 3. PAYLOAD CONSTRUCTION ══ -->
+  <section class="report-section">
+    <span class="section-num">§ 3</span>
+    <h2 class="section-heading">Payload Construction</h2>
+
+    <p>The final exploit string is composed of three distinct segments engineered to trigger the overflow and execute the payload sequentially:</p>
+    <ol class="steps">
+      <li><strong>NOP Sled:</strong> 132 bytes of <code>\x90</code> to act as a runway for execution flow.</li>
+      <li><strong>Shellcode (shell.bin):</strong> Compiled raw machine code designed to invoke the <code>execve</code> syscall to launch <code>/bin/sh</code>.</li>
+      <li><strong>Padding & Return Address:</strong> 10 bytes of arbitrary padding (<code>"A"</code>) followed by the little-endian packed return address (<code>\xe0\xce\xff\xff</code>) which overwrites the original instruction pointer.</li>
+    </ol>
+    
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PAYLOAD ARCHITECTURE</span><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div></div>
+      <pre>[ NOP Sled : 132 bytes ] + [ Shellcode : ~24-30 bytes ] + [ Pad : 10 bytes ] + [ RET : 4 bytes ]
+   \x90\x90...\x90             \x31\xc0\x50\x68...           AAAAAAAAAA         \xe0\xce\xff\xff</pre>
+    </div>
+  </section>
+
+  <!-- ══ 4. EXPLOITATION ══ -->
+  <section class="report-section">
+    <span class="section-num">§ 4</span>
+    <h2 class="section-heading">Execution & Access</h2>
+
+    <p>I utilized Perl to procedurally generate the byte sequence in the terminal, reading the pre-compiled shellcode dynamically from <code>shell.bin</code>. Since the exploit launches an interactive shell, providing standard input without terminating stream execution was critical, which is natively supported when executing via the shell argument directly.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">BASH - FINAL EXPLOIT CHAIN</span><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div></div>
+      <pre><span class="hl-prompt">sam@lab:~$</span> <span class="hl-cmd">./helloVuln5</span> <span class="hl-str">$(perl -e 'print "\x90"x132')$(cat shell.bin)$(perl -e 'print "A"x10 . "\xe0\xce\xff\xff"')</span>
+Hello, ...
+$ <span class="hl-cmd">whoami</span>
+sam
+$ <span class="hl-cmd">cat flag.txt</span>
+<span class="hl-addr">samflag{sh3llc0d3_1nj3ct10n_m4st3r}</span></pre>
+    </div>
+
+    <div class="callout callout-success">
+      <span class="callout-icon">🔥</span>
+      <div class="callout-body">
+        <h4>Interactive Shell Established</h4>
+        <p>The program successfully overflowed the buffer, returned into the NOP sled, and executed the injected shellcode, establishing a root-level interactive bash session.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 5. MITIGATIONS ══ -->
+  <section class="report-section">
+    <span class="section-num">§ 5</span>
+    <h2 class="section-heading">Defensive Mitigations</h2>
+    <p>This attack demonstrates why Data Execution Prevention (DEP / NX Bit) is a critical modern operating system feature. To secure the application:</p>
+    <ol class="steps">
+      <li><strong>Enforce W^X (Write XOR Execute):</strong> Enable the Non-Executable (NX) bit on the stack memory segments. This OS-level protection ensures that memory regions are either writable OR executable, but never both. If NX was enabled, the CPU would raise a hardware exception upon attempting to execute the shellcode.</li>
+      <li><strong>Implement ASLR:</strong> Randomizing stack positioning renders the hardcoded <code>0xffffcee0</code> address useless, forcing the exploit to rely on complex information leaks before staging.</li>
+      <li><strong>Code Security:</strong> Eliminate unbounded copy operations (e.g., <code>gets()</code> or <code>strcpy()</code>) in the source code completely.</li>
+    </ol>
+  </section>
+
+
+  <!-- ══ APPENDIX: PROOF ══ -->
+  <section class="report-section" style="margin-top: 60px; border-top: 1px dashed var(--border); padding-top: 40px;">
+    <h2 class="section-heading">Appendix: Raw Execution Evidence</h2>
+    <p>The following are the raw screenshots captured during the original execution of this lab on the target VM network.</p>
+    <div style="display: flex; flex-direction: column; gap: 20px; align-items: center; margin-top: 30px;">
+      <img src="./images/sam_proof_1.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/sam_proof_2.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/sam_proof_3.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/sam_proof_4.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/sam_proof_5.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/sam_proof_6.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/sam_proof_7.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/sam_proof_8.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/sam_proof_9.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/sam_proof_10.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/sam_proof_11.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/sam_proof_12.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/sam_proof_13.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/sam_proof_14.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/sam_proof_15.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/sam_proof_16.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/sam_proof_17.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+    </div>
+  </section>
+
+  <footer class="report-footer">
+    <span>Percy Flores - CS 647 Counter Hacking Techniques, NJIT, Fall 2025</span>
+    <span>Sam Lab Assessment Report</span>
+  </footer>
+
+</div>
+
+<script>
+  const html = document.documentElement;
+  const btn  = document.getElementById('theme-btn');
+  const saved = localStorage.getItem('pf-theme') || 'dark';
+  html.setAttribute('data-theme', saved);
+  if (btn) btn.textContent = saved === 'dark' ? '🌙' : '☀️';
+  btn?.addEventListener('click', () => {
+    const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('pf-theme', next);
+    btn.textContent = next === 'dark' ? '🌙' : '☀️';
+  });
+</script>
+</body>
+</html>

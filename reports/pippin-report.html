@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pippin Lab - Digital Forensics & SSH Exploitation | Percy Flores</title>
+  <link rel="stylesheet" href="./report-style.css" />
+</head>
+<body>
+
+<div class="report-topbar">
+  <a class="topbar-logo" href="../index.html">[ percy.flores ]</a>
+  <div class="topbar-actions">
+    <a class="btn-back" href="../index.html#documents">← Back to Portfolio</a>
+    <button class="btn-print" onclick="window.print()">⎙ Print / Save PDF</button>
+    <button class="theme-btn" id="theme-btn" title="Toggle theme">🌙</button>
+  </div>
+</div>
+
+<div class="report-wrap">
+
+  <!-- ══ HEADER ══ -->
+  <header class="report-header">
+    <div class="report-meta-top">
+      <span class="badge-course">CS 647 - Counter Hacking Techniques</span>
+      <span class="badge-type">Lab Assessment Report</span>
+    </div>
+    <h1 class="report-title">Pippin Lab: Digital Forensics<br>& SSH Exploitation</h1>
+    <p class="report-subtitle">Extracting a hidden SSH private key from obfuscated archives to gain initial shell access and pivot to an internal SMB service.</p>
+    <div class="report-meta-grid">
+      <div class="meta-item"><span class="meta-label">Author</span><span class="meta-value">Percy Flores</span></div>
+      <div class="meta-item"><span class="meta-label">Institution</span><span class="meta-value">NJIT</span></div>
+      <div class="meta-item"><span class="meta-label">Course</span><span class="meta-value">CS 647 - Fall 2025</span></div>
+      <div class="meta-item"><span class="meta-label">Lab Target</span><span class="meta-value">Pippin (Network Share / Obfuscated Archives)</span></div>
+      <div class="meta-item"><span class="meta-label">Vulnerability Class</span><span class="meta-value">Information Exposure / Insecure Credential Storage</span></div>
+      <div class="meta-item"><span class="meta-label">Outcome</span><span class="meta-value">✓ Secure Shell Accessed, SMB Flag Retrieved</span></div>
+    </div>
+  </header>
+
+  <!-- ══ ABSTRACT ══ -->
+  <div class="abstract">
+    <div class="abstract-label">Abstract</div>
+    <p>
+      In this assessment, the target credential was secured through "security by obscurity" in a heavily nested archive traversing several diverse compression formats (zip, tar, gzip, bzip2, and xz). I conducted a forensic analysis using file signatures to recursively unpack the archive until recovering an unprotected SSH private key (<code>id_rsa</code>) for the <code>pippin</code> account. Using this key, I bypassed password authentication over SSH to gain an initial foothold. Through local enumeration, I discovered a CSV file containing an SMB username and password which permitted access to an internal network share holding the target flag.
+    </p>
+  </div>
+
+  <!-- ══ 1. FILE FORENSICS ══ -->
+  <section class="report-section">
+    <span class="section-num">§ 1</span>
+    <h2 class="section-heading">Layered File Extraction</h2>
+
+    <h3 class="subsection">1.1 Initial Archive Inspection</h3>
+    <p>The engagement started with a seemingly harmless file named <code>SaveForPippin.zip</code>. Decompressing this yielded an ambiguously named binary <code>PippinFile1</code>. To determine the file type without an extension, I relied on UNIX magic numbers via the <code>file</code> command.</p>
+    
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">BASH - FILE TYPE IDENTIFICATION</span><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div></div>
+      <pre><span class="hl-prompt">user@host:~$</span> <span class="hl-cmd">unzip</span> <span class="hl-str">SaveForPippin.zip</span>
+Archive: SaveForPippin.zip
+  inflating: PippinFile1
+
+<span class="hl-prompt">user@host:~$</span> <span class="hl-cmd">file</span> <span class="hl-str">PippinFile1</span>
+PippinFile1: bzip2 compressed data, block size = 900k</pre>
+    </div>
+
+    <h3 class="subsection">1.2 Recursive Decompression</h3>
+    <p>I renamed the file adding a <code>.bz2</code> extension and utilized the <code>bzip2 -d</code> command. This produced <code>PippinFile2</code>, which upon subsequent <code>file</code> inspection proved to be a <code>gzip</code> compressed tarball (<code>.tar.gz</code>). I extracted this recursively, moving down through further obscuration layers including <code>xz</code> compression.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">BASH - FINAL EXTRACTION</span><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div></div>
+      <pre><span class="hl-prompt">user@host:~$</span> <span class="hl-cmd">tar</span> -xvf PippinFile3.tar.xz
+.ssh/
+.ssh/id_rsa</pre>
+    </div>
+
+    <div class="callout callout-success">
+      <span class="callout-icon">🗝️</span>
+      <div class="callout-body">
+        <h4>SSH Private Key Isolated</h4>
+        <p>The final extraction unveiled a standard `.ssh` directory containing an unencrypted RSA private key (`id_rsa`). This key lacked a passphrase, making it immediately viable for use.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 2. EXPLOITATION ══ -->
+  <section class="report-section">
+    <span class="section-num">§ 2</span>
+    <h2 class="section-heading">Credential Exploitation & Pivoting</h2>
+
+    <h3 class="subsection">2.1 SSH Authentication Bypass</h3>
+    <p>I adjusted the permissions of the <code>id_rsa</code> key to <code>600</code> (read-write by owner only) to satisfy SSH's strict security checks, and successfully authenticated to the target machine as the `pippin` user without requiring a password.</p>
+    
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">BASH - SSH LOGIN</span><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div></div>
+      <pre><span class="hl-prompt">user@host:~$</span> <span class="hl-cmd">chmod</span> 600 id_rsa
+<span class="hl-prompt">user@host:~$</span> <span class="hl-cmd">ssh</span> -i id_rsa pippin@lab-target
+Welcome to Ubuntu 22.04 LTS (GNU/Linux 5.15.0)
+
+<span class="hl-prompt">pippin@lab-target:~$</span> </pre>
+    </div>
+
+    <h3 class="subsection">2.2 Local Enumeration and Credential Harvesting</h3>
+    <p>Post-exploitation enumeration within the `pippin` home directory revealed a hidden file `creds.csv`. Inside, the file contained a cleartext username and password intended for the local Server Message Block (SMB) file share.</p>
+    
+    <h3 class="subsection">2.3 Retrieving the Flag via SMB</h3>
+    <p>Using the harvested credentials, I authenticated locally against the SMB server running on <code>127.0.0.1</code> to download the target flag.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">BASH - SMB CLIENT</span><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div></div>
+      <pre><span class="hl-prompt">pippin@lab-target:~$</span> <span class="hl-cmd">smbclient</span> //127.0.0.1/PippinsShare -U pippin%[Redacted_Password]
+smb: \> <span class="hl-cmd">get</span> PippinsFlag.txt
+getting file \PippinsFlag.txt of size 34 as PippinsFlag.txt (16.6 KiloBytes/sec)
+
+<span class="hl-prompt">pippin@lab-target:~$</span> <span class="hl-cmd">cat</span> <span class="hl-str">PippinsFlag.txt</span>
+<span class="hl-addr">pippinfl4g{ssh_k3ys_v1a_4rch1v3s}</span></pre>
+    </div>
+  </section>
+
+  <!-- ══ 3. MITIGATIONS ══ -->
+  <section class="report-section">
+    <span class="section-num">§ 3</span>
+    <h2 class="section-heading">Defensive Mitigations</h2>
+    <p>This attack vector underscores why "security by obscurity" - such as nesting archives - is fundamentally flawed. An automated forensic script could unpack deep nesting layers in seconds. To genuinely secure this system:</p>
+    <ol class="steps">
+      <li><strong>Passphrase Protect SSH Keys:</strong> All private keys must be encrypted at rest using strong passphrases (e.g., via <code>ssh-keygen -p</code>). If the <code>id_rsa</code> file was passphrase protected, gaining the file alone would not guarantee authentication.</li>
+      <li><strong>Deploy Vaults for Secrets:</strong> Do not store credentials in plaintext CSV formats. System credentials should be vaulted using dedicated secrets managers like HashiCorp Vault, AWS Secrets Manager, or at a minimum, secure system keystores.</li>
+      <li><strong>Disable Key Auth Portability:</strong> Ensure SSH configurations (<code>sshd_config</code>) enforce key validation against IP allowlists or leverage hardware-backed authentication (FIDO2 / YubiKeys).</li>
+    </ol>
+  </section>
+
+
+  <!-- ══ APPENDIX: PROOF ══ -->
+  <section class="report-section" style="margin-top: 60px; border-top: 1px dashed var(--border); padding-top: 40px;">
+    <h2 class="section-heading">Appendix: Raw Execution Evidence</h2>
+    <p>The following are the raw screenshots captured during the original execution of this lab on the target VM network.</p>
+    <div style="display: flex; flex-direction: column; gap: 20px; align-items: center; margin-top: 30px;">
+      <img src="./images/pippin_proof_1.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/pippin_proof_2.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/pippin_proof_3.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/pippin_proof_4.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/pippin_proof_5.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/pippin_proof_6.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/pippin_proof_7.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/pippin_proof_8.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/pippin_proof_9.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/pippin_proof_10.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <img src="./images/pippin_proof_11.png" alt="Raw Execution Screenshot" style="border: 1px solid var(--border); border-radius: 8px; max-width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+    </div>
+  </section>
+
+  <footer class="report-footer">
+    <span>Percy Flores - CS 647 Counter Hacking Techniques, NJIT, Fall 2025</span>
+    <span>Pippin Lab Assessment Report</span>
+  </footer>
+
+</div>
+
+<script>
+  const html = document.documentElement;
+  const btn  = document.getElementById('theme-btn');
+  const saved = localStorage.getItem('pf-theme') || 'dark';
+  html.setAttribute('data-theme', saved);
+  if (btn) btn.textContent = saved === 'dark' ? '🌙' : '☀️';
+  btn?.addEventListener('click', () => {
+    const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('pf-theme', next);
+    btn.textContent = next === 'dark' ? '🌙' : '☀️';
+  });
+</script>
+</body>
+</html>
