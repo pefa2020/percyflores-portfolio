@@ -1,6 +1,6 @@
 # Percy Flores | Professional Portfolio
 
-[![Live Site](https://img.shields.io/badge/Live-Site-06b6d4?style=for-the-badge)](https://pefa2020.github.io/percyflores-portfolio/))
+[![Live Site](https://img.shields.io/badge/Live-Site-06b6d4?style=for-the-badge)]((https://pefa2020.github.io/percyflores-portfolio/))
 
 A production-grade, meticulously crafted personal portfolio designed to showcase enterprise-level software engineering and cybersecurity capabilities.
 
